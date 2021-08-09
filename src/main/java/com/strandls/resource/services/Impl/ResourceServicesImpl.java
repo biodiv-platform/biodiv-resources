@@ -346,10 +346,17 @@ public class ResourceServicesImpl implements ResourceServices {
 	@Override
 	public List<ResourceData> speciesResourcesPulling(SpeciesResourcePulling resourcePullingData) {
 
-		for (Long resourceId : resourcePullingData.getResourcesIds()) {
-			SpeciesResource entity = new SpeciesResource(resourceId, resourcePullingData.getSpeciesId());
-			entity = speciesResourceDao.save(entity);
+		try {
+			for (Long resourceId : resourcePullingData.getResourcesIds()) {
+				System.out.println("resourceID : " + resourceId);
+				System.out.println("speciesID :" + resourcePullingData.getSpeciesId());
+				SpeciesResource entity = new SpeciesResource(resourceId, resourcePullingData.getSpeciesId());
+				speciesResourceDao.save(entity);
+			}
+		} catch (Exception e) {
+			System.out.println("error ho gya :" + e.getMessage());
 		}
+
 		return getResouceURL("species", resourcePullingData.getSpeciesId());
 	}
 
