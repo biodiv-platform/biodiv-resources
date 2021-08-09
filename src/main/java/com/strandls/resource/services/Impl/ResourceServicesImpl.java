@@ -165,6 +165,7 @@ public class ResourceServicesImpl implements ResourceServices {
 				if (oldResource.getFileName().equals(resource.getFileName())) {
 					flag = 1;
 					resource.setId(oldResource.getId());
+					resource.setContext(oldResource.getContext());
 					resourceDao.update(resource);
 					break;
 				}
