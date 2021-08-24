@@ -34,6 +34,7 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 				tx.rollback();
 			throw e;
 		} finally {
+			session.flush();
 			session.close();
 		}
 		return entity;
@@ -51,6 +52,7 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 				tx.rollback();
 			throw e;
 		} finally {
+			session.flush();
 			session.close();
 		}
 		return entity;
@@ -68,6 +70,7 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 				tx.rollback();
 			throw e;
 		} finally {
+			session.flush();
 			session.close();
 		}
 		return entity;
@@ -96,7 +99,8 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 		List<T> entities = null;
 		Session session = sessionFactory.openSession();
 		try {
-			Criteria criteria = session.createCriteria(daoType).setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+			Criteria criteria = session.createCriteria(daoType)
+					.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 			entities = criteria.setFirstResult(offset).setMaxResults(limit).list();
 		} catch (Exception e) {
 			throw e;
