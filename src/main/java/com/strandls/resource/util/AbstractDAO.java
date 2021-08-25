@@ -28,6 +28,7 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 		try {
 			tx = session.beginTransaction();
 			session.save(entity);
+			session.flush();
 			tx.commit();
 		} catch (Exception e) {
 			if (tx != null)
@@ -45,6 +46,7 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 		try {
 			tx = session.beginTransaction();
 			session.update(entity);
+			session.flush();
 			tx.commit();
 		} catch (Exception e) {
 			if (tx != null)
@@ -62,6 +64,7 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 		try {
 			tx = session.beginTransaction();
 			session.delete(entity);
+			session.flush();
 			tx.commit();
 		} catch (Exception e) {
 			if (tx != null)
