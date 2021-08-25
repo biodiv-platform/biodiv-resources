@@ -34,7 +34,6 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 				tx.rollback();
 			throw e;
 		} finally {
-			session.flush();
 			session.close();
 		}
 		return entity;
@@ -52,7 +51,6 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 				tx.rollback();
 			throw e;
 		} finally {
-			session.flush();
 			session.close();
 		}
 		return entity;
@@ -70,7 +68,6 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 				tx.rollback();
 			throw e;
 		} finally {
-			session.flush();
 			session.close();
 		}
 		return entity;
