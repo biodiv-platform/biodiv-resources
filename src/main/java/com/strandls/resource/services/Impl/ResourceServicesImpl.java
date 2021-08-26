@@ -228,8 +228,7 @@ public class ResourceServicesImpl implements ResourceServices {
 			return resourceList;
 
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 		return null;
 
@@ -363,8 +362,7 @@ public class ResourceServicesImpl implements ResourceServices {
 				speciesResourceDao.save(entity);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("error ho gya :" + e.getMessage());
+			logger.error(e.getMessage());
 		}
 
 		return getResouceURL("species", resourcePullingData.getSpeciesId());
