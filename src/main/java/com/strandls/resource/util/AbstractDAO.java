@@ -35,6 +35,7 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 			System.out.println(e.getMessage());
 			throw e;
 		} finally {
+			session.flush();
 			session.close();
 		}
 		return entity;
@@ -53,6 +54,7 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 			System.out.println(e.getMessage());
 			throw e;
 		} finally {
+			session.flush();
 			session.close();
 		}
 		return entity;
@@ -71,6 +73,7 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 			System.out.println(e.getMessage());
 			throw e;
 		} finally {
+			session.flush();
 			session.close();
 		}
 		return entity;
