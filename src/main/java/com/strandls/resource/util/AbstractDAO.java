@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -24,7 +22,6 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 		this.sessionFactory = sessionFactory;
 	}
 
-	@Transactional
 	public T save(T entity) {
 		Session session = sessionFactory.openSession();
 		Transaction tx = null;
@@ -35,16 +32,13 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 		} catch (Exception e) {
 			if (tx != null)
 				tx.rollback();
-			System.out.println(e.getMessage());
 			throw e;
 		} finally {
-			session.flush();
 			session.close();
 		}
 		return entity;
 	}
 
-	@Transactional
 	public T update(T entity) {
 		Session session = sessionFactory.openSession();
 		Transaction tx = null;
@@ -55,16 +49,13 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 		} catch (Exception e) {
 			if (tx != null)
 				tx.rollback();
-			System.out.println(e.getMessage());
 			throw e;
 		} finally {
-			session.flush();
 			session.close();
 		}
 		return entity;
 	}
 
-	@Transactional
 	public T delete(T entity) {
 		Session session = sessionFactory.openSession();
 		Transaction tx = null;
@@ -75,10 +66,8 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 		} catch (Exception e) {
 			if (tx != null)
 				tx.rollback();
-			System.out.println(e.getMessage());
 			throw e;
 		} finally {
-			session.flush();
 			session.close();
 		}
 		return entity;
