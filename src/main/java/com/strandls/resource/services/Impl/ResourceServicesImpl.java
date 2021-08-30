@@ -374,4 +374,23 @@ public class ResourceServicesImpl implements ResourceServices {
 		return result;
 	}
 
+	@Override
+	public Boolean removeSpeciesFieldMapping(Long speciesFieldId) {
+		try {
+			List<Long> resourcesList = speciesFieldResourceDao.findBySpeciesFieldId(speciesFieldId);
+			if (resourcesList != null && !resourcesList.isEmpty()) {
+				for (Long resourceId : resourcesList) {
+					SpeciesFieldResources speciesFieldResource = new SpeciesFieldResources(speciesFieldId, resourceId);
+					speciesFieldResourceDao.delete(speciesFieldResource);
+				}
+			}
+
+			return true;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return false;
+
+	}
+
 }

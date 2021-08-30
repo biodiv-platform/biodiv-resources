@@ -32,5 +32,6 @@ public class ApiConstants {
 	public static final String UFILE = "/ufile";
 	public static final String BULK = "/bulk";
 	public static final String PULLRESOURCE = "/pullResource";
+	public static final String SPECIESFIELD = "/specieField";
 
 }

@@ -42,4 +42,6 @@ public interface ResourceServices {
 
 	public Resource getResourceById(Long resourceId);
 
+	public Boolean removeSpeciesFieldMapping(Long speciesFieldId);
+
 }
