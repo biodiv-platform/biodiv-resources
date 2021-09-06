@@ -278,4 +278,43 @@ public class ResourceController {
 		}
 	}
 
+	@GET
+	@Path(ApiConstants.GETPATH + "/{resourceId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "fetch resource by Id", notes = "returns  resources", response = Resource.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
+
+	public Response getResourceDataById(@PathParam("resourceId") String resourceId) {
+		try {
+			Long rId = Long.parseLong(resourceId);
+			Resource result = service.getResourceById(rId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@DELETE
+	@Path(ApiConstants.REMOVE + ApiConstants.SPECIESFIELD + "/{sfId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "remove speciesField mapping", notes = "returns boolean", response = Boolean.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
+
+	public Response removeSFMapping(@Context HttpServletRequest request, @PathParam("sfId") String sfId) {
+		try {
+			Long speciesFieldId = Long.parseLong(sfId);
+			Boolean result = service.removeSpeciesFieldMapping(speciesFieldId);
+			return Response.status(Status.OK).entity(result).build();
+
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
 }

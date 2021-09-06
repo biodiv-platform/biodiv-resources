@@ -52,6 +52,7 @@ public class SpeciesResource implements Serializable {
 		this.resourceId = resourceId;
 	}
 
+	@Id
 	@Column(name = "species_resources_id")
 	public Long getSpeciesId() {
 		return speciesId;

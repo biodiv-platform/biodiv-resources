@@ -40,4 +40,8 @@ public interface ResourceServices {
 
 	public List<ResourceData> speciesResourcesPulling(SpeciesResourcePulling resourcePullingData);
 
+	public Resource getResourceById(Long resourceId);
+
+	public Boolean removeSpeciesFieldMapping(Long speciesFieldId);
+
 }

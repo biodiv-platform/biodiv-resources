@@ -9,15 +9,28 @@
 		<property name="hibernate.connection.username">postgres</property>
 		<property name="hibernate.connection.password">postgres123</property>
 		<property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/biodiv</property>
-
 		<property name="connection_pool_size">1</property>
+
+		<property name="transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
 
 		<property name="hbm2ddl.auto">update</property>
 
 		<property name="show_sql">true</property>
-		
-		<mapping class="com.strandls.resource.pojo.Resource"/>
-		<mapping class="com.strandls.resource.pojo.ObservationResource"/>
-		<mapping class="com.strandls.resource.pojo.License"/>
+
+		<property name="hibernate.current_session_context_class">thread</property>
+		<property name="hibernate.connection.provider_class">org.hibernate.hikaricp.internal.HikariCPConnectionProvider</property>
+
+		<!-- Maximum waiting time for a connection from the pool -->
+		<property name="hibernate.hikari.connectionTimeout">1000</property>
+
+		<!-- Minimum number of ideal connections in the pool -->
+		<property name="hibernate.hikari.minimumIdle">5</property>
+
+		<!-- Maximum number of actual connection in the pool -->
+		<property name="hibernate.hikari.maximumPoolSize">30</property>
+
+		<!-- Maximum time that a connection is allowed to sit ideal in the pool -->
+		<property name="hibernate.hikari.idleTimeout">10000</property>
+		<property name="hibernate.jdbc.lob.non_contextual_creation">true</property>
 	</session-factory>
 </hibernate-configuration>
