@@ -47,6 +47,7 @@ public class Resource implements Serializable {
 	private String annotations;
 	private Long gbifId;
 	private Long licenseId;
+	private String contributor;
 
 	@Id
 	@GeneratedValue
@@ -192,6 +193,15 @@ public class Resource implements Serializable {
 
 	public void setGbifId(Long gbifId) {
 		this.gbifId = gbifId;
+	}
+
+	@Column(name = "contributor")
+	public String getContributor() {
+		return contributor;
+	}
+
+	public void setContributor(String contributor) {
+		this.contributor = contributor;
 	}
 
 }
