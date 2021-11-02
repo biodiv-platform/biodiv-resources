@@ -257,7 +257,7 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	@Override
 	public UFile createUFile(UFileCreateData ufileCreateData) {
-		UFile ufile = new UFile(null, 0L, null, ufileCreateData.getMimeType(), ufileCreateData.getPath(),
+		UFile ufile = new UFile(null, ufileCreateData.getMimeType(), ufileCreateData.getPath(),
 				ufileCreateData.getSize(), (ufileCreateData.getWeight() > 0) ? ufileCreateData.getWeight() : 0);
 
 		ufile = uFileDao.save(ufile);

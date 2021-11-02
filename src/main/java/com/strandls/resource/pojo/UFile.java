@@ -23,8 +23,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class UFile {
 
 	private Long id;
-	private Long version;
-	private Integer downloads;
 	private String mimeType;
 	private String path;
 	private String size;
@@ -39,18 +37,14 @@ public class UFile {
 
 	/**
 	 * @param id
-	 * @param version
-	 * @param downloads
 	 * @param mimeType
 	 * @param path
 	 * @param size
 	 * @param weight
 	 */
-	public UFile(Long id, Long version, Integer downloads, String mimeType, String path, String size, Integer weight) {
+	public UFile(Long id, String mimeType, String path, String size, Integer weight) {
 		super();
 		this.id = id;
-		this.version = version;
-		this.downloads = downloads;
 		this.mimeType = mimeType;
 		this.path = path;
 		this.size = size;
@@ -66,24 +60,6 @@ public class UFile {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	@Column(name = "version")
-	public Long getVersion() {
-		return version;
-	}
-
-	public void setVersion(Long version) {
-		this.version = version;
-	}
-
-	@Column(name = "downloads")
-	public Integer getDownloads() {
-		return downloads;
-	}
-
-	public void setDownloads(Integer downloads) {
-		this.downloads = downloads;
 	}
 
 	@Column(name = "mimetype")
