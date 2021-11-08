@@ -167,6 +167,7 @@ public class ResourceServicesImpl implements ResourceServices {
 						flag = 1;
 						resource.setId(oldResource.getId());
 						resource.setContext(oldResource.getContext());
+						resource.setUploaderId(oldResource.getUploaderId());
 						resourceDao.update(resource);
 						break;
 					}

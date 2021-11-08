@@ -43,6 +43,7 @@ public class Resource implements Serializable {
 	private String context;
 	private Long languageId;
 	private Long licenseId;
+	private String contributor;
 
 	@Id
 	@GeneratedValue
@@ -152,6 +153,15 @@ public class Resource implements Serializable {
 
 	public void setLanguageId(Long languageId) {
 		this.languageId = languageId;
+	}
+
+	@Column(name = "contributor")
+	public String getContributor() {
+		return contributor;
+	}
+
+	public void setContributor(String contributor) {
+		this.contributor = contributor;
 	}
 
 }
