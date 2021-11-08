@@ -32,7 +32,6 @@ public class Resource implements Serializable {
 	private static final long serialVersionUID = -4877757562860141754L;
 
 	private Long id;
-	private Long version;
 	private String description;
 	private String fileName;
 	private String mimeType;
@@ -43,9 +42,6 @@ public class Resource implements Serializable {
 	private Long uploaderId;
 	private String context;
 	private Long languageId;
-	private String accessRights;
-	private String annotations;
-	private Long gbifId;
 	private Long licenseId;
 	private String contributor;
 
@@ -58,15 +54,6 @@ public class Resource implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	@Column(name = "version")
-	public Long getVersion() {
-		return version;
-	}
-
-	public void setVersion(Long version) {
-		this.version = version;
 	}
 
 	@Column(name = "file_name")
@@ -166,33 +153,6 @@ public class Resource implements Serializable {
 
 	public void setLanguageId(Long languageId) {
 		this.languageId = languageId;
-	}
-
-	@Column(name = "access_rights")
-	public String getAccessRights() {
-		return accessRights;
-	}
-
-	public void setAccessRights(String accessRights) {
-		this.accessRights = accessRights;
-	}
-
-	@Column(name = "annotations")
-	public String getAnnotations() {
-		return annotations;
-	}
-
-	public void setAnnotations(String annotations) {
-		this.annotations = annotations;
-	}
-
-	@Column(name = "gbifid")
-	public Long getGbifId() {
-		return gbifId;
-	}
-
-	public void setGbifId(Long gbifId) {
-		this.gbifId = gbifId;
 	}
 
 	@Column(name = "contributor")
