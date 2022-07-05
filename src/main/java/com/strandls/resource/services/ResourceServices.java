@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.Resource;
+import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
 import com.strandls.resource.pojo.ResourceRating;
 import com.strandls.resource.pojo.SpeciesPull;
@@ -43,5 +44,9 @@ public interface ResourceServices {
 	public Resource getResourceById(Long resourceId);
 
 	public Boolean removeSpeciesFieldMapping(Long speciesFieldId);
+
+	public List<ResourceCropInfo> fetchResourceCropInfo(String resourceIds);
+
+	public ResourceCropInfo updateResourceCropInfo(ResourceCropInfo info);
 
 }

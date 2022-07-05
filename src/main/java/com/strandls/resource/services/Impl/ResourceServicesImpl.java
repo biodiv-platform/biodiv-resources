@@ -4,10 +4,13 @@
 package com.strandls.resource.services.Impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -16,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.strandls.resource.dao.LicenseDao;
 import com.strandls.resource.dao.ObservationResourceDao;
+import com.strandls.resource.dao.ResourceCropDao;
 import com.strandls.resource.dao.ResourceDao;
 import com.strandls.resource.dao.SpeciesFieldResourcesDao;
 import com.strandls.resource.dao.SpeciesResourceDao;
@@ -23,6 +27,7 @@ import com.strandls.resource.dao.UFileDao;
 import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.ObservationResource;
 import com.strandls.resource.pojo.Resource;
+import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
 import com.strandls.resource.pojo.ResourceRating;
 import com.strandls.resource.pojo.SpeciesFieldResources;
@@ -42,6 +47,11 @@ import com.strandls.user.pojo.UserIbp;
  * @author Abhishek Rudra
  *
  */
+
+enum CropStatus {
+	VALID, INVALID;
+}
+
 public class ResourceServicesImpl implements ResourceServices {
 
 	private static final Logger logger = LoggerFactory.getLogger(ResourceServicesImpl.class);
@@ -69,6 +79,9 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	@Inject
 	private LicenseServices licenseService;
+
+	@Inject
+	private ResourceCropDao resourceCropDao;
 
 	@Override
 	public List<ResourceData> getResouceURL(String objectType, Long objectId) {
@@ -392,6 +405,46 @@ public class ResourceServicesImpl implements ResourceServices {
 		}
 		return false;
 
+	}
+
+	@Override
+	public List<ResourceCropInfo> fetchResourceCropInfo(String resourceIds) {
+		try {
+			List<Long> listOfResourceIds = Stream.of(resourceIds.split(",")).map(Long::parseLong)
+					.collect(Collectors.toList());
+			List<ResourceCropInfo> resourcesCropInfo = resourceCropDao.findByResourceIds(listOfResourceIds);
+			return resourcesCropInfo;
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+
+		}
+		return null;
+
+	}
+
+	private Boolean validCropStatus(String status) {
+		for (CropStatus cropStatus : CropStatus.values()) {
+			if (cropStatus.name().equalsIgnoreCase(status.toLowerCase())) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public ResourceCropInfo updateResourceCropInfo(ResourceCropInfo info) {
+		try {
+			if (validCropStatus(info.getCropStatus())) {
+				ResourceCropInfo ans = resourceCropDao.update(info);
+				return ans;
+			}
+			return null;
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
 	}
 
 }
