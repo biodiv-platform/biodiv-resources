@@ -4,7 +4,6 @@
 package com.strandls.resource.services.Impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -434,12 +433,17 @@ public class ResourceServicesImpl implements ResourceServices {
 	}
 
 	public ResourceCropInfo updateResourceCropInfo(ResourceCropInfo info) {
+		ResourceCropInfo result;
 		try {
 			if (validCropStatus(info.getCropStatus())) {
-				ResourceCropInfo ans = resourceCropDao.update(info);
-				return ans;
+				ResourceCropInfo resource = resourceCropDao.findById(info.getId());
+				if (resource == null) {
+					result = resourceCropDao.save(info);
+				} else {
+					result = resourceCropDao.update(info);
+				}
+				return result;
 			}
-			return null;
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());

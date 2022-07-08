@@ -22,8 +22,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.checkerframework.dataflow.qual.Pure;
-
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.resource.ApiConstants;
 import com.strandls.resource.pojo.License;
@@ -340,6 +338,9 @@ public class ResourceController {
 	@Path("/cropInfo/update")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "update crop details of resources", notes = "returns updated crop information", response = ResourceCropInfo.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
+
 	public Response updateResourcesCropInfo(@ApiParam(name = "resourcesCropInfo") ResourceCropInfo resourceCropInfo) {
 		try {
 			ResourceCropInfo result = service.updateResourceCropInfo(resourceCropInfo);

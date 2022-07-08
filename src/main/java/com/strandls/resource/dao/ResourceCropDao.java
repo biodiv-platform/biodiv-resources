@@ -10,7 +10,6 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.util.AbstractDAO;
 

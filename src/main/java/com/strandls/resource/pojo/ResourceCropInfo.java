@@ -4,13 +4,8 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -20,7 +15,6 @@ import io.swagger.annotations.ApiModel;
 @Entity
 @Table(name = "resource_crop_info")
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 public class ResourceCropInfo implements Serializable {
 	/**
 	 * 
