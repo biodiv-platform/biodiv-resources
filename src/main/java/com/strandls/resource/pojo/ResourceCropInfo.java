@@ -23,7 +23,7 @@ public class ResourceCropInfo implements Serializable {
 
 	private Long id;
 
-	private String cropStatus;
+	private String selectionStatus;
 
 	private Long x;
 
@@ -35,13 +35,12 @@ public class ResourceCropInfo implements Serializable {
 
 	public ResourceCropInfo() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
-	public ResourceCropInfo(Long id, String cropStatus, Long x, Long y, Long width, Long height) {
+	public ResourceCropInfo(Long id, String selectionStatus, Long x, Long y, Long width, Long height) {
 		super();
 		this.id = id;
-		this.cropStatus = cropStatus;
+		this.selectionStatus = selectionStatus;
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -58,13 +57,13 @@ public class ResourceCropInfo implements Serializable {
 		this.id = id;
 	}
 
-	@Column(name = "crop_status")
-	public String getCropStatus() {
-		return cropStatus;
+	@Column(name = "selection_status")
+	public String getSelectionStatus() {
+		return selectionStatus;
 	}
 
-	public void setCropStatus(String cropStatus) {
-		this.cropStatus = cropStatus;
+	public void setSelectionStatus(String selectionStatus) {
+		this.selectionStatus = selectionStatus;
 	}
 
 	@Column(name = "x")

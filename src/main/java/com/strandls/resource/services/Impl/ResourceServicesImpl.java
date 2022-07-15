@@ -47,8 +47,8 @@ import com.strandls.user.pojo.UserIbp;
  *
  */
 
-enum CropStatus {
-	VALID, INVALID;
+enum SelectionStatus {
+	SELECTED, REJECTED, NOT_CURATED;
 }
 
 public class ResourceServicesImpl implements ResourceServices {
@@ -423,8 +423,8 @@ public class ResourceServicesImpl implements ResourceServices {
 	}
 
 	private Boolean validCropStatus(String status) {
-		for (CropStatus cropStatus : CropStatus.values()) {
-			if (cropStatus.name().equalsIgnoreCase(status.toLowerCase())) {
+		for (SelectionStatus selectionStatus : SelectionStatus.values()) {
+			if (selectionStatus.name().equalsIgnoreCase(status.toLowerCase())) {
 				return true;
 			}
 		}
@@ -435,7 +435,7 @@ public class ResourceServicesImpl implements ResourceServices {
 	public ResourceCropInfo updateResourceCropInfo(ResourceCropInfo info) {
 		ResourceCropInfo result;
 		try {
-			if (validCropStatus(info.getCropStatus())) {
+			if (validCropStatus(info.getSelectionStatus())) {
 				ResourceCropInfo resource = resourceCropDao.findById(info.getId());
 				if (resource == null) {
 					result = resourceCropDao.save(info);
