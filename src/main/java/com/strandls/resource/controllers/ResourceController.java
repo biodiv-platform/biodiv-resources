@@ -342,7 +342,7 @@ public class ResourceController {
 	@ApiOperation(value = "update crop details of resources", notes = "returns updated crop information", response = ResourceCropInfo.class)
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
 
-	public Response updateResourcesCropInfo(@ApiParam(name = "resourcesCropInfo") ResourceCropInfo resourceCropInfo) {
+	public Response updateResourcesCropInfo(@Context HttpServletRequest request,@ApiParam(name = "resourcesCropInfo") ResourceCropInfo resourceCropInfo) {
 		try {
 			ResourceCropInfo result = service.updateResourceCropInfo(resourceCropInfo);
 			return Response.status(Status.OK).entity(result).build();
