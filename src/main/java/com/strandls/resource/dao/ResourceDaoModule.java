@@ -21,6 +21,7 @@ public class ResourceDaoModule extends AbstractModule {
 		bind(SpeciesResourceDao.class).in(Scopes.SINGLETON);
 		bind(SpeciesFieldResourcesDao.class).in(Scopes.SINGLETON);
 		bind(UFileDao.class).in(Scopes.SINGLETON);
+		bind(ResourceCropDao.class).in(Scopes.SINGLETON);
 
 	}
 }
