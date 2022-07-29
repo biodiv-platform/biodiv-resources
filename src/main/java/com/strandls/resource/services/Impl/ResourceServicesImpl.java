@@ -434,8 +434,9 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	public ResourceCropInfo updateResourceCropInfo(ResourceCropInfo info) {
 		ResourceCropInfo result;
+
 		try {
-			if (validCropStatus(info.getSelectionStatus())) {
+			if (info.getSelectionStatus() == null || validCropStatus(info.getSelectionStatus())) {
 				ResourceCropInfo resource = resourceCropDao.findById(info.getId());
 				if (resource == null) {
 					result = resourceCropDao.save(info);
