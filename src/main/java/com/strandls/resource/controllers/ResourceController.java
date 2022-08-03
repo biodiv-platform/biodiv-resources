@@ -26,6 +26,7 @@ import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.resource.ApiConstants;
 import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.Resource;
+import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
 import com.strandls.resource.pojo.ResourceRating;
 import com.strandls.resource.pojo.SpeciesPull;
@@ -312,6 +313,39 @@ public class ResourceController {
 			Boolean result = service.removeSpeciesFieldMapping(speciesFieldId);
 			return Response.status(Status.OK).entity(result).build();
 
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path("/cropInfo/{resourceId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "get crop details of resources", notes = "returns something", response = ResourceCropInfo.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
+	public Response getResourcesCropInfo(@PathParam("resourceId") String resourceIds) {
+		try {
+			List<ResourceCropInfo> result = service.fetchResourceCropInfo(resourceIds);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+
+	}
+
+	@PUT
+	@Path("/cropInfo/update")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ValidateUser
+	@ApiOperation(value = "update crop details of resources", notes = "returns updated crop information", response = ResourceCropInfo.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
+
+	public Response updateResourcesCropInfo(@Context HttpServletRequest request,@ApiParam(name = "resourcesCropInfo") ResourceCropInfo resourceCropInfo) {
+		try {
+			ResourceCropInfo result = service.updateResourceCropInfo(resourceCropInfo);
+			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
