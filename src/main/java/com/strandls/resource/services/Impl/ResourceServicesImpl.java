@@ -369,8 +369,6 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		try {
 			for (Long resourceId : resourcePullingData.getResourcesIds()) {
-				System.out.println("resourceID : " + resourceId);
-				System.out.println("speciesID :" + resourcePullingData.getSpeciesId());
 				SpeciesResource entity = new SpeciesResource(resourceId, resourcePullingData.getSpeciesId());
 				speciesResourceDao.save(entity);
 			}
