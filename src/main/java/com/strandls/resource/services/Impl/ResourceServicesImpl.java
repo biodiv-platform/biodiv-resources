@@ -12,11 +12,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 
+import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.resource.dao.LicenseDao;
+import com.strandls.resource.dao.MediaGalleryDao;
 import com.strandls.resource.dao.ObservationResourceDao;
 import com.strandls.resource.dao.ResourceCropDao;
 import com.strandls.resource.dao.ResourceDao;
@@ -24,6 +28,9 @@ import com.strandls.resource.dao.SpeciesFieldResourcesDao;
 import com.strandls.resource.dao.SpeciesResourceDao;
 import com.strandls.resource.dao.UFileDao;
 import com.strandls.resource.pojo.License;
+import com.strandls.resource.pojo.MediaGallery;
+import com.strandls.resource.pojo.MediaGalleryCreate;
+import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.ObservationResource;
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
@@ -41,6 +48,10 @@ import com.strandls.resource.util.Constants;
 import com.strandls.user.ApiException;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.UserIbp;
+import com.strandls.utility.controller.UtilityServiceApi;
+import com.strandls.utility.pojo.Tags;
+import com.strandls.utility.pojo.TagsMapping;
+import com.strandls.utility.pojo.TagsMappingData;
 
 /**
  * @author Abhishek Rudra
@@ -81,6 +92,15 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	@Inject
 	private ResourceCropDao resourceCropDao;
+
+	@Inject
+	private MediaGalleryHelper mediaGalleryHelper;
+
+	@Inject
+	private MediaGalleryDao mediaGalleryDao;
+
+	@Inject
+	private UtilityServiceApi utilityServiceApi;
 
 	@Override
 	public List<ResourceData> getResouceURL(String objectType, Long objectId) {
@@ -450,6 +470,56 @@ public class ResourceServicesImpl implements ResourceServices {
 			logger.error(e.getMessage());
 		}
 		return null;
+	}
+
+	@Override
+	public MediaGalleryShow getMediaByID(Long objId) {
+		MediaGalleryShow mediaGalleryShow = new MediaGalleryShow();
+		MediaGallery mediaGallerry = mediaGalleryDao.findById(objId);
+		try {
+			List<Tags> tags = utilityServiceApi.getTags("mediaGallery", objId.toString());
+			UserIbp ibp = userService.getUserIbp(objId.toString());
+
+			mediaGalleryShow.setMediaGallery(mediaGallerry);
+			mediaGalleryShow.setTags(tags);
+			mediaGalleryShow.setAuthorInfo(ibp);
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return mediaGalleryShow;
+	}
+
+	@Override
+	public MediaGalleryShow createMedia(HttpServletRequest request, MediaGalleryCreate mediaGalleryCreate) {
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+		Long userId = Long.parseLong(profile.getId());
+
+		MediaGallery mediaGallery = mediaGalleryHelper.createMediaGalleryMapping(userId, mediaGalleryCreate);
+		mediaGalleryDao.save(mediaGallery);
+
+		if (mediaGalleryCreate.getResources() != null) {
+			List<Resource> resources = mediaGalleryHelper.createResourceMapping(request, userId,
+					mediaGalleryCreate.getResources());
+			if (resources.isEmpty()) {
+				return null;
+			}
+		}
+		if (!(mediaGalleryCreate.getTags().isEmpty())) {
+
+			TagsMapping tagsMapping = new TagsMapping();
+			tagsMapping.setObjectId(mediaGallery.getId());
+			tagsMapping.setTags(mediaGalleryCreate.getTags());
+
+			TagsMappingData tagMappingData = new TagsMappingData();
+			tagMappingData.setTagsMapping(tagsMapping);
+			tagMappingData.setMailData(null);
+
+			mediaGalleryHelper.createTagsMapping(request, tagMappingData);
+
+		}
+		return getMediaByID(mediaGallery.getId());
 	}
 
 }
