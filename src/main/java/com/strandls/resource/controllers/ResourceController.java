@@ -25,6 +25,8 @@ import javax.ws.rs.core.Response.Status;
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.resource.ApiConstants;
 import com.strandls.resource.pojo.License;
+import com.strandls.resource.pojo.MediaGalleryCreate;
+import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
@@ -342,10 +344,52 @@ public class ResourceController {
 	@ApiOperation(value = "update crop details of resources", notes = "returns updated crop information", response = ResourceCropInfo.class)
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
 
-	public Response updateResourcesCropInfo(@Context HttpServletRequest request,@ApiParam(name = "resourcesCropInfo") ResourceCropInfo resourceCropInfo) {
+	public Response updateResourcesCropInfo(@Context HttpServletRequest request,
+			@ApiParam(name = "resourcesCropInfo") ResourceCropInfo resourceCropInfo) {
 		try {
 			ResourceCropInfo result = service.updateResourceCropInfo(resourceCropInfo);
 			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path("/media" + "/{mId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find Media Reource by  ID", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
+
+	public Response getMedia(@ApiParam(value = "ID  for Resource", required = true) @PathParam("mId") String mId) {
+		try {
+
+			Long objId = Long.parseLong(mId);
+			MediaGalleryShow mediaGallery = service.getMediaByID(objId);
+			return Response.status(Status.OK).entity(mediaGallery).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@POST
+	@Path("/media" + ApiConstants.CREATE)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "create the Ufile object", notes = "return the ufile object on completion", response = UFile.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to create the ufile", response = String.class) })
+
+	public Response createMedia(@Context HttpServletRequest request,
+			@ApiParam(name = "ufileCreateData") MediaGalleryCreate mediaGalleryCreate) {
+		try {
+			MediaGalleryShow result = service.createMedia(request, mediaGalleryCreate);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Data missing").build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
