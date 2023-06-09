@@ -1,5 +1,7 @@
 package com.strandls.resource.dao;
 
+import javax.inject.Inject;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
@@ -10,8 +12,12 @@ import com.strandls.resource.util.AbstractDAO;
 
 public class MediaGalleryDao extends AbstractDAO<MediaGallery, Long> {
 
-	private final Logger logger = LoggerFactory.getLogger(MediaGalleryDao.class);
+	private static final Logger logger = LoggerFactory.getLogger(MediaGalleryDao.class);
 
+	/**
+	 * @param sessionFactory
+	 */
+	@Inject
 	protected MediaGalleryDao(SessionFactory sessionFactory) {
 		super(sessionFactory);
 	}
