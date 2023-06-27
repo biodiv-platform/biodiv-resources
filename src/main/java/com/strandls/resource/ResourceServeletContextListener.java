@@ -81,6 +81,7 @@ public class ResourceServeletContextListener extends GuiceServletContextListener
 				bind(ServletContainer.class).in(Scopes.SINGLETON);
 				bind(UtilityServiceApi.class).in(Scopes.SINGLETON);
 				bind(UploadApi.class).in(Scopes.SINGLETON);
+				bind(Headers.class).in(Scopes.SINGLETON);
 				serve("/api/*").with(ServletContainer.class, props);
 
 			}

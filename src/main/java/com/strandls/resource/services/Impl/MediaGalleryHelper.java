@@ -40,6 +40,9 @@ public class MediaGalleryHelper {
 	private Long defaultLanguageId = Long
 			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLanguageId"));
 
+	private Long defaultLicenseId = Long
+			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLicenseId"));
+
 	public MediaGallery createMediaGalleryMapping(Long userId, MediaGalleryCreate mediaGalleryCreate) {
 		try {
 			MediaGallery mediaGallery = new MediaGallery();
@@ -136,7 +139,12 @@ public class MediaGalleryHelper {
 				resource.setLanguageId(defaultLanguageId);
 			}
 
-			resource.setLicenseId(resourceData.getLicenseId());
+			if (resourceData.getLicenseId() != null) {
+				resource.setLicenseId(resourceData.getLicenseId());
+			} else {
+				resource.setLicenseId(defaultLicenseId);
+			}
+
 			resource.setContributor(resourceData.getContributor());
 
 			resources.add(resource);

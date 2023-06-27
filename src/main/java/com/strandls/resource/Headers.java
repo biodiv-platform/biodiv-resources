@@ -5,6 +5,9 @@ import javax.ws.rs.core.HttpHeaders;
 import com.strandls.file.api.UploadApi;
 import com.strandls.utility.controller.UtilityServiceApi;
 
+/**
+ * @author Arun	
+ */
 public class Headers {
 
 	public UploadApi addFileUploadHeader(UploadApi uploadService, String authHeader) {

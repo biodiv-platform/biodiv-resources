@@ -36,7 +36,7 @@ public class ResourceDataMediaGallery {
 		this.url = url;
 		this.type = type;
 		this.caption = caption;
-		this.setRating(rating);
+		this.rating = rating;
 		this.licenseId = licenseId;
 		this.context = context;
 		this.languageId = languageId;
