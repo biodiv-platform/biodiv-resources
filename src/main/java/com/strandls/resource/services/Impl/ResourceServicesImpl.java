@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.resource.dao.LicenseDao;
 import com.strandls.resource.dao.MediaGalleryDao;
+import com.strandls.resource.dao.MediaGalleryResourceDao;
 import com.strandls.resource.dao.ObservationResourceDao;
 import com.strandls.resource.dao.ResourceCropDao;
 import com.strandls.resource.dao.ResourceDao;
@@ -102,6 +103,9 @@ public class ResourceServicesImpl implements ResourceServices {
 	@Inject
 	private UtilityServiceApi utilityServiceApi;
 
+	@Inject
+	private MediaGalleryResourceDao mediaGalleryResourceDao;
+
 	@Override
 	public List<ResourceData> getResouceURL(String objectType, Long objectId) {
 		List<ResourceData> observationResourceUsers = new ArrayList<ResourceData>();
@@ -112,6 +116,9 @@ public class ResourceServicesImpl implements ResourceServices {
 			resourceIds = speciesResourceDao.findBySpeciesId(objectId);
 		else if (objectType.equalsIgnoreCase(Constants.SPECIESFIELD))
 			resourceIds = speciesFieldResourceDao.findBySpeciesFieldId(objectId);
+		else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY))
+			resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
+
 		if (resourceIds == null || resourceIds.isEmpty())
 			return null;
 		List<Resource> resourceList = resourceDao.findByObjectId(resourceIds);
@@ -476,13 +483,16 @@ public class ResourceServicesImpl implements ResourceServices {
 	public MediaGalleryShow getMediaByID(Long objId) {
 		MediaGalleryShow mediaGalleryShow = new MediaGalleryShow();
 		MediaGallery mediaGallerry = mediaGalleryDao.findById(objId);
+
 		try {
 			List<Tags> tags = utilityServiceApi.getTags("mediaGallery", objId.toString());
-			UserIbp ibp = userService.getUserIbp(objId.toString());
+			UserIbp ibp = userService.getUserIbp(mediaGallerry.getAuthorId().toString());
+			List<ResourceData> mediaGalleryResource = getResouceURL("mediaGallery", objId);
 
 			mediaGalleryShow.setMediaGallery(mediaGallerry);
 			mediaGalleryShow.setTags(tags);
 			mediaGalleryShow.setAuthorInfo(ibp);
+			mediaGalleryShow.setMediaGalleryResource(mediaGalleryResource);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
