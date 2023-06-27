@@ -122,7 +122,7 @@ public class MediaGallery implements Serializable {
 		this.longitude = longitude;
 	}
 
-	@Column(name = "license_id", nullable = false)
+	@Column(name = "license_id", nullable = true)
 	public Long getLicenseId() {
 		return this.licenseId;
 	}
