@@ -15,6 +15,7 @@ public class MediaGalleryShow {
 	private MediaGallery mediaGallery;
 	private List<Tags> tags;
 	private UserIbp authorInfo;
+	private List<ResourceData> mediaGalleryResource;
 
 	public MediaGallery getMediaGallery() {
 		return mediaGallery;
@@ -38,6 +39,14 @@ public class MediaGalleryShow {
 
 	public void setAuthorInfo(UserIbp authorInfo) {
 		this.authorInfo = authorInfo;
+	}
+
+	public List<ResourceData> getMediaGalleryResource() {
+		return mediaGalleryResource;
+	}
+
+	public void setMediaGalleryResource(List<ResourceData> mediaGalleryResource) {
+		this.mediaGalleryResource = mediaGalleryResource;
 	}
 
 }
