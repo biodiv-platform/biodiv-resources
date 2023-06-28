@@ -18,6 +18,7 @@ import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.net.HttpHeaders;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.resource.dao.LicenseDao;
 import com.strandls.resource.dao.MediaGalleryDao;
@@ -31,6 +32,7 @@ import com.strandls.resource.dao.UFileDao;
 import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
+import com.strandls.resource.pojo.MediaGalleryResource;
 import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.ObservationResource;
 import com.strandls.resource.pojo.Resource;
@@ -163,6 +165,11 @@ public class ResourceServicesImpl implements ResourceServices {
 					SpeciesFieldResources mappingResult = speciesFieldResourceDao.save(entity);
 					logger.debug("Species Resource Mapping Created: " + mappingResult.getSpeciesFieldId() + " and "
 							+ mappingResult.getResourceId());
+				} else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY)) {
+					MediaGalleryResource entity = new MediaGalleryResource(objectId, resource.getId());
+					MediaGalleryResource mappingResult = mediaGalleryResourceDao.save(entity);
+					logger.debug("Media Gallery Resource Mapping Created: " + mappingResult.getMediaGalleryId()
+							+ " and " + mappingResult.getResourceId());
 				}
 
 			}
@@ -175,6 +182,8 @@ public class ResourceServicesImpl implements ResourceServices {
 			resourceIds = speciesResourceDao.findBySpeciesId(objectId);
 		else if (objectType.equalsIgnoreCase(Constants.SPECIESFIELD))
 			resourceIds = speciesFieldResourceDao.findBySpeciesFieldId(objectId);
+		else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY))
+			resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
 		resources = resourceDao.findByObjectId(resourceIds);
 		return resources;
 
@@ -193,6 +202,8 @@ public class ResourceServicesImpl implements ResourceServices {
 				resourceIds = speciesResourceDao.findBySpeciesId(objectId);
 			else if (objectType.equalsIgnoreCase(Constants.SPECIESFIELD))
 				resourceIds = speciesFieldResourceDao.findBySpeciesFieldId(objectId);
+			else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY))
+				resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
 
 			if (resourceIds == null || resourceIds.isEmpty())
 //				resources are getting created for the first time
@@ -230,6 +241,11 @@ public class ResourceServicesImpl implements ResourceServices {
 						SpeciesFieldResources mappingResult = speciesFieldResourceDao.save(entity);
 						logger.debug("Species Resource Mapping Created: " + mappingResult.getSpeciesFieldId() + " and "
 								+ mappingResult.getResourceId());
+					} else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY)) {
+						MediaGalleryResource entity = new MediaGalleryResource(objectId, resource.getId());
+						MediaGalleryResource mappingResult = mediaGalleryResourceDao.save(entity);
+						logger.debug("Media Gallery Resource Mapping Created: " + mappingResult.getMediaGalleryId()
+								+ " and " + mappingResult.getResourceId());
 					}
 				}
 			}
@@ -252,7 +268,10 @@ public class ResourceServicesImpl implements ResourceServices {
 						SpeciesFieldResources speciesFieldResource = speciesFieldResourceDao.findByPair(objectId,
 								oldResource.getId());
 						speciesFieldResourceDao.delete(speciesFieldResource);
-
+					} else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY)) {
+						MediaGalleryResource mediaGalleryResource = mediaGalleryResourceDao.findByPair(objectId,
+								oldResource.getId());
+						mediaGalleryResourceDao.delete(mediaGalleryResource);
 					}
 				}
 			}
@@ -263,6 +282,8 @@ public class ResourceServicesImpl implements ResourceServices {
 				resourceIds = speciesResourceDao.findBySpeciesId(objectId);
 			else if (objectType.equalsIgnoreCase(Constants.SPECIESFIELD))
 				resourceIds = speciesFieldResourceDao.findBySpeciesFieldId(objectId);
+			else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY))
+				resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
 
 			resourceList = resourceDao.findByObjectId(resourceIds);
 			return resourceList;
@@ -286,6 +307,8 @@ public class ResourceServicesImpl implements ResourceServices {
 			resourceIds = speciesResourceDao.findBySpeciesId(objectId);
 		else if (objectType.equalsIgnoreCase(Constants.SPECIESFIELD))
 			resourceIds = speciesFieldResourceDao.findBySpeciesFieldId(objectId);
+		else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY))
+			resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
 
 		return resourceDao.findByObjectId(resourceIds);
 	}
@@ -483,9 +506,9 @@ public class ResourceServicesImpl implements ResourceServices {
 		MediaGallery mediaGallerry = mediaGalleryDao.findById(objId);
 
 		try {
-			List<Tags> tags = utilityServiceApi.getTags("mediaGallery", objId.toString());
+			List<Tags> tags = utilityServiceApi.getTags(Constants.MEDIAGALLERY, objId.toString());
 			UserIbp ibp = userService.getUserIbp(mediaGallerry.getAuthorId().toString());
-			List<ResourceData> mediaGalleryResource = getResouceURL("mediaGallery", objId);
+			List<ResourceData> mediaGalleryResource = getResouceURL(Constants.MEDIAGALLERY, objId);
 
 			mediaGalleryShow.setMediaGallery(mediaGallerry);
 			mediaGalleryShow.setTags(tags);
@@ -513,6 +536,8 @@ public class ResourceServicesImpl implements ResourceServices {
 			if (resources.isEmpty()) {
 				return null;
 			}
+
+			createResource(Constants.MEDIAGALLERY, mediaGallery.getId(), resources);
 		}
 		if (!(mediaGalleryCreate.getTags().isEmpty())) {
 
