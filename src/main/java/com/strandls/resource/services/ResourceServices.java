@@ -8,7 +8,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import com.strandls.resource.pojo.License;
-import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
 import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.Resource;
@@ -57,5 +56,7 @@ public interface ResourceServices {
 	public MediaGalleryShow getMediaByID(Long objId);
 
 	public MediaGalleryShow createMedia(HttpServletRequest request, MediaGalleryCreate mediaGalleryCreate);
+
+	public List<MediaGalleryShow> getAllMediaGallery();
 
 }
