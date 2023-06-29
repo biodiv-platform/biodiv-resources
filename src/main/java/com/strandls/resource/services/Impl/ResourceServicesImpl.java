@@ -18,7 +18,6 @@ import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.net.HttpHeaders;
 import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.resource.dao.LicenseDao;
 import com.strandls.resource.dao.MediaGalleryDao;
@@ -553,6 +552,18 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		}
 		return getMediaByID(mediaGallery.getId());
+	}
+
+	@Override
+	public List<MediaGalleryShow> getAllMediaGallery() {
+		// TODO add filters
+		List<MediaGalleryShow> resultList = new ArrayList<>();
+		List<MediaGallery> mediaGallery = mediaGalleryDao.findAll();
+		for (MediaGallery item : mediaGallery) {
+			resultList.add(getMediaByID(item.getId()));
+		}
+
+		return resultList;
 	}
 
 }

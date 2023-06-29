@@ -423,4 +423,22 @@ public class ResourceController {
 		}
 	}
 
+	@GET
+	@Path("/media/all")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find All Media Reource ", notes = "Returns List of Media", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
+
+	public Response getMedia() {
+		try {
+
+			List<MediaGalleryShow> mediaGallery = service.getAllMediaGallery();
+			return Response.status(Status.OK).entity(mediaGallery).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
 }
