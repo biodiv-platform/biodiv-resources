@@ -49,12 +49,8 @@ public class MediaGalleryHelper {
 			mediaGallery.setAuthorId(userId);
 			mediaGallery.setCreatedOn(new Date());
 			mediaGallery.setUpdatedOn(new Date());
-			mediaGallery.setLatitude(mediaGalleryCreate.getLatitude());
-			mediaGallery.setLongitude(mediaGalleryCreate.getLongitude());
-			mediaGallery.setRating(0);
+			mediaGallery.setName(mediaGalleryCreate.getName());
 			mediaGallery.setDescripition(mediaGalleryCreate.getDescription());
-			mediaGallery.setTitle(mediaGalleryCreate.getTitle());
-			mediaGallery.setIsTruncated(Boolean.FALSE);
 
 			return mediaGallery;
 
@@ -161,7 +157,7 @@ public class MediaGalleryHelper {
 
 		utilityServices = headers.addUtilityHeaders(utilityServices, request.getHeader(HttpHeaders.AUTHORIZATION));
 		try {
-			utilityServices.createTags("mediaGallery", tagsMappingData);
+			utilityServices.createTags("resource", tagsMappingData);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}

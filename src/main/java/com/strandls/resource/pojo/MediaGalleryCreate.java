@@ -14,28 +14,14 @@ import com.strandls.utility.pojo.Tags;
 
 public class MediaGalleryCreate {
 
-	private Boolean isTruncated;
+	private String name;
+	private String description;
+
+	private Boolean isDeleted;
 	private Date createdOn;
 	private Date updatedOn;
 
-//	-----Location Data--------
-	private Double latitude;
-	private Double longitude;
-
-	private ResourceDataMediaGallery resources;
-
-	private String title;
-	private String description;
-
-	private List<Tags> tags;
-
-	public Boolean getIsTruncated() {
-		return isTruncated;
-	}
-
-	public void setIsTruncated(Boolean isTruncated) {
-		this.isTruncated = isTruncated;
-	}
+	private List<ResourceDataMediaGallery> resourcesList;
 
 	public Date getCreatedOn() {
 		return createdOn;
@@ -53,44 +39,12 @@ public class MediaGalleryCreate {
 		this.updatedOn = updatedOn;
 	}
 
-	public Double getLatitude() {
-		return latitude;
+	public String getName() {
+		return name;
 	}
 
-	public void setLatitude(Double latitude) {
-		this.latitude = latitude;
-	}
-
-	public Double getLongitude() {
-		return longitude;
-	}
-
-	public void setLongitude(Double longitude) {
-		this.longitude = longitude;
-	}
-
-	public List<Tags> getTags() {
-		return tags;
-	}
-
-	public void setTags(List<Tags> tags) {
-		this.tags = tags;
-	}
-
-	public ResourceDataMediaGallery getResources() {
-		return resources;
-	}
-
-	public void setResources(ResourceDataMediaGallery resources) {
-		this.resources = resources;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getDescription() {
@@ -99,6 +53,22 @@ public class MediaGalleryCreate {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
+
+	public List<ResourceDataMediaGallery> getResourcesList() {
+		return resourcesList;
+	}
+
+	public void setResourcesList(List<ResourceDataMediaGallery> resourcesList) {
+		this.resourcesList = resourcesList;
 	}
 
 }

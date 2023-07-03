@@ -25,19 +25,12 @@ public class MediaGallery implements Serializable {
 
 	private Long id;
 
-	private String title;
+	private String name;
 	private String descripition;
-
 	private Long authorId;
-	private Long licenseId;
-	private Integer rating;
-
-	private Boolean isTruncated;
+	private Boolean isDeleted;
 	private Date createdOn;
 	private Date updatedOn;
-
-	private Double latitude;
-	private Double longitude;
 
 	@Id
 	@Column(name = "id", nullable = false)
@@ -48,15 +41,6 @@ public class MediaGallery implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	@Column(name = "title")
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
 	}
 
 	@Column(name = "description")
@@ -77,15 +61,6 @@ public class MediaGallery implements Serializable {
 		this.authorId = authorId;
 	}
 
-	@Column(name = "is_truncated")
-	public Boolean getIsTruncated() {
-		return isTruncated;
-	}
-
-	public void setIsTruncated(Boolean isTruncated) {
-		this.isTruncated = isTruncated;
-	}
-
 	@Column(name = "created_on")
 	public Date getCreatedOn() {
 		return createdOn;
@@ -104,40 +79,22 @@ public class MediaGallery implements Serializable {
 		this.updatedOn = updatedOn;
 	}
 
-	@Column(name = "latitude")
-	public Double getLatitude() {
-		return latitude;
+	@Column(name = "name")
+	public String getName() {
+		return name;
 	}
 
-	public void setLatitude(Double latitude) {
-		this.latitude = latitude;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	@Column(name = "longitude")
-	public Double getLongitude() {
-		return longitude;
+	@Column(name = "is_deleted")
+	public Boolean getIsDeleted() {
+		return isDeleted;
 	}
 
-	public void setLongitude(Double longitude) {
-		this.longitude = longitude;
-	}
-
-	@Column(name = "license_id", nullable = true)
-	public Long getLicenseId() {
-		return this.licenseId;
-	}
-
-	public void setLicenseId(Long licenseId) {
-		this.licenseId = licenseId;
-	}
-
-	@Column(name = "rating", nullable = false)
-	public Integer getRating() {
-		return this.rating;
-	}
-
-	public void setRating(Integer rating) {
-		this.rating = rating;
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 
 }

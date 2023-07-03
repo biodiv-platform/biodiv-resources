@@ -375,7 +375,7 @@ public class ResourceController {
 	}
 
 	@POST
-	@Path("/media/test" + ApiConstants.CREATE)
+	@Path("/media" + ApiConstants.CREATE)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -391,33 +391,6 @@ public class ResourceController {
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("Data missing").build();
-		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
-		}
-	}
-
-	@POST
-	@Path("/media" + ApiConstants.CREATE)
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@ValidateUser
-	@ApiOperation(value = "create the Ufile object", notes = "return the ufile object on completion", response = UFile.class)
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to create the ufile", response = String.class) })
-	public Response createMedia(@Context HttpServletRequest request,
-			@ApiParam(name = "ufileCreateData") MediaGalleryCreate[] mediaGalleryCreateArray) {
-		try {
-			List<MediaGalleryShow> resultList = new ArrayList<>();
-
-			for (MediaGalleryCreate mediaGalleryCreate : mediaGalleryCreateArray) {
-				MediaGalleryShow result = service.createMedia(request, mediaGalleryCreate);
-				if (result != null) {
-					resultList.add(result);
-				} else {
-					return Response.status(Status.NOT_ACCEPTABLE).entity("Data missing").build();
-				}
-			}
-
-			return Response.status(Status.OK).entity(resultList).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}

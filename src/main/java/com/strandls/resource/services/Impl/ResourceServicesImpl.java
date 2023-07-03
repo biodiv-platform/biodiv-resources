@@ -37,6 +37,7 @@ import com.strandls.resource.pojo.ObservationResource;
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
+import com.strandls.resource.pojo.ResourceDataMediaGallery;
 import com.strandls.resource.pojo.ResourceRating;
 import com.strandls.resource.pojo.SpeciesFieldResources;
 import com.strandls.resource.pojo.SpeciesPull;
@@ -126,8 +127,16 @@ public class ResourceServicesImpl implements ResourceServices {
 		for (Resource resource : resourceList) {
 			try {
 				UserIbp userIbp = userService.getUserIbp(resource.getUploaderId().toString());
-				observationResourceUsers.add(
-						new ResourceData(resource, userIbp, licenseService.getLicenseById(resource.getLicenseId())));
+
+				List<Tags> tags = null;
+				try {
+					tags = utilityServiceApi.getTags(Constants.RESOURCE, resource.getId().toString());
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+
+				observationResourceUsers.add(new ResourceData(resource, userIbp,
+						licenseService.getLicenseById(resource.getLicenseId()), tags));
 			} catch (ApiException e) {
 				logger.error(e.getMessage());
 			}
@@ -387,13 +396,13 @@ public class ResourceServicesImpl implements ResourceServices {
 				if (speciesPullMap.containsKey(observationId)) {
 					List<ResourceData> resourcesDataList = speciesPullMap.get(observationId);
 					resourcesDataList.add(new ResourceData(resource, userIbp,
-							licenseService.getLicenseById(resource.getLicenseId())));
+							licenseService.getLicenseById(resource.getLicenseId()), null));
 					speciesPullMap.put(observationId, resourcesDataList);
 
 				} else {
 					List<ResourceData> resourcesDataList = new ArrayList<ResourceData>();
 					resourcesDataList.add(new ResourceData(resource, userIbp,
-							licenseService.getLicenseById(resource.getLicenseId())));
+							licenseService.getLicenseById(resource.getLicenseId()), null));
 					speciesPullMap.put(observationId, resourcesDataList);
 				}
 
@@ -505,13 +514,8 @@ public class ResourceServicesImpl implements ResourceServices {
 		MediaGallery mediaGallerry = mediaGalleryDao.findById(objId);
 
 		try {
-			List<Tags> tags = utilityServiceApi.getTags(Constants.MEDIAGALLERY, objId.toString());
-			UserIbp ibp = userService.getUserIbp(mediaGallerry.getAuthorId().toString());
 			List<ResourceData> mediaGalleryResource = getResouceURL(Constants.MEDIAGALLERY, objId);
-
 			mediaGalleryShow.setMediaGallery(mediaGallerry);
-			mediaGalleryShow.setTags(tags);
-			mediaGalleryShow.setAuthorInfo(ibp);
 			mediaGalleryShow.setMediaGalleryResource(mediaGalleryResource);
 
 		} catch (Exception e) {
@@ -529,28 +533,37 @@ public class ResourceServicesImpl implements ResourceServices {
 		MediaGallery mediaGallery = mediaGalleryHelper.createMediaGalleryMapping(userId, mediaGalleryCreate);
 		mediaGalleryDao.save(mediaGallery);
 
-		if (mediaGalleryCreate.getResources() != null) {
-			List<Resource> resources = mediaGalleryHelper.createResourceMapping(request, userId,
-					mediaGalleryCreate.getResources());
-			if (resources.isEmpty()) {
-				return null;
+		if (!(mediaGalleryCreate.getResourcesList().isEmpty())) {
+			for (ResourceDataMediaGallery resourceDataMediaGallery : mediaGalleryCreate.getResourcesList()) {
+
+				List<Resource> resources = mediaGalleryHelper.createResourceMapping(request, userId,
+						resourceDataMediaGallery);
+
+				if (resources == null || resources.isEmpty()) {
+					mediaGalleryDao.delete(mediaGallery);
+					return null;
+
+				}
+
+				List<Resource> resourceList = createResource(Constants.MEDIAGALLERY, mediaGallery.getId(), resources);
+
+				if (!(resourceDataMediaGallery.getTags().isEmpty())) {
+					for (Resource resourceData : resourceList) {
+
+						TagsMapping tagsMapping = new TagsMapping();
+						tagsMapping.setObjectId(resourceData.getId());
+						tagsMapping.setTags(resourceDataMediaGallery.getTags());
+
+						TagsMappingData tagMappingData = new TagsMappingData();
+						tagMappingData.setTagsMapping(tagsMapping);
+						tagMappingData.setMailData(null);
+
+						mediaGalleryHelper.createTagsMapping(request, tagMappingData);
+					}
+				}
 			}
-
-			createResource(Constants.MEDIAGALLERY, mediaGallery.getId(), resources);
 		}
-		if (!(mediaGalleryCreate.getTags().isEmpty())) {
 
-			TagsMapping tagsMapping = new TagsMapping();
-			tagsMapping.setObjectId(mediaGallery.getId());
-			tagsMapping.setTags(mediaGalleryCreate.getTags());
-
-			TagsMappingData tagMappingData = new TagsMappingData();
-			tagMappingData.setTagsMapping(tagsMapping);
-			tagMappingData.setMailData(null);
-
-			mediaGalleryHelper.createTagsMapping(request, tagMappingData);
-
-		}
 		return getMediaByID(mediaGallery.getId());
 	}
 

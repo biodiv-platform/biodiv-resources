@@ -1,5 +1,9 @@
 package com.strandls.resource.pojo;
 
+import java.util.List;
+
+import com.strandls.utility.pojo.Tags;
+
 public class ResourceDataMediaGallery {
 
 	private String path;
@@ -11,6 +15,8 @@ public class ResourceDataMediaGallery {
 	private String context;
 	private Long languageId;
 	private String contributor;
+
+	private List<Tags> tags;
 
 	/**
 	 * 
@@ -28,9 +34,10 @@ public class ResourceDataMediaGallery {
 	 * @param context
 	 * @param languageId
 	 * @param contributor
+	 * @param tags
 	 */
 	public ResourceDataMediaGallery(String path, String url, String type, String caption, Integer rating,
-			Long licenseId, String context, Long languageId, String contributor) {
+			Long licenseId, String context, Long languageId, String contributor, List<Tags> tags) {
 		super();
 		this.path = path;
 		this.url = url;
@@ -41,6 +48,7 @@ public class ResourceDataMediaGallery {
 		this.context = context;
 		this.languageId = languageId;
 		this.contributor = contributor;
+		this.tags = tags;
 	}
 
 	public String getPath() {
@@ -115,11 +123,19 @@ public class ResourceDataMediaGallery {
 		this.contributor = contributor;
 	}
 
+	public List<Tags> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<Tags> tags) {
+		this.tags = tags;
+	}
+
 	@Override
 	public String toString() {
 		return "ResourceDataMedia [path=" + path + ", url=" + url + ", type=" + type + ", caption=" + caption
 				+ ", licenseId=" + licenseId + ", context=" + context + ", languageId=" + languageId + ", contributor="
-				+ contributor + "]";
+				+ contributor + "]" + ", tags=" + tags;
 	}
 
 }
