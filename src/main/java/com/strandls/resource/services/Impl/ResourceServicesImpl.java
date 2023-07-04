@@ -579,4 +579,22 @@ public class ResourceServicesImpl implements ResourceServices {
 		return resultList;
 	}
 
+	@Override
+	public List<ResourceData> getAllResources(Integer limit, Integer offset) {
+		List<ResourceData> resultList = new ArrayList<>();
+		List<Resource> resources = resourceDao.findAll(limit, offset);
+		for (Resource item : resources) {
+			ResourceData resourceData = new ResourceData();
+			try {
+				resourceData.setUserIbp(userService.getUserIbp(item.getUploaderId().toString()));
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+			}
+
+			resourceData.setResource(item);
+			resultList.add(resourceData);
+		}
+		return resultList;
+	}
+
 }

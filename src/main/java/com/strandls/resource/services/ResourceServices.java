@@ -59,4 +59,6 @@ public interface ResourceServices {
 
 	public List<MediaGalleryShow> getAllMediaGallery();
 
+	public List<ResourceData> getAllResources(Integer limit, Integer offset);
+
 }
