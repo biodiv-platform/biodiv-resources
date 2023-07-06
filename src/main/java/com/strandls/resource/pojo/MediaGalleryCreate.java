@@ -4,7 +4,6 @@ import java.sql.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.strandls.utility.pojo.Tags;
 
 /**
  * @author Arun

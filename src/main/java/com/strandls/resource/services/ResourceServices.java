@@ -13,6 +13,7 @@ import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
+import com.strandls.resource.pojo.ResourceListData;
 import com.strandls.resource.pojo.ResourceRating;
 import com.strandls.resource.pojo.SpeciesPull;
 import com.strandls.resource.pojo.SpeciesResourcePulling;
@@ -59,6 +60,6 @@ public interface ResourceServices {
 
 	public List<MediaGalleryShow> getAllMediaGallery();
 
-	public List<ResourceData> getAllResources(Integer limit, Integer offset);
+	public ResourceListData getAllResources(Integer limit, Integer offset, String context, String type, String tags);
 
 }

@@ -30,6 +30,7 @@ import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
+import com.strandls.resource.pojo.ResourceListData;
 import com.strandls.resource.pojo.ResourceRating;
 import com.strandls.resource.pojo.SpeciesPull;
 import com.strandls.resource.pojo.SpeciesResourcePulling;
@@ -422,13 +423,17 @@ public class ResourceController {
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
 
 	public Response getAllResources(@DefaultValue("0") @QueryParam("offset") String offset,
-			@DefaultValue("12") @QueryParam("limit") String limit) {
+			@DefaultValue("12") @QueryParam("limit") String limit,
+			@DefaultValue("all") @QueryParam("context") String context,
+			@DefaultValue("all") @QueryParam("type") String type,
+			@DefaultValue("all") @QueryParam("tags") String tags) {
 		try {
 
-			Integer l = Integer.parseInt(limit);
-			Integer o = Integer.parseInt(offset);
-			List<ResourceData> resource = service.getAllResources(l, o);
-			return Response.status(Status.OK).entity(resource).build();
+			Integer max = Integer.parseInt(limit);
+			Integer offSet = Integer.parseInt(offset);
+
+			ResourceListData resultList = service.getAllResources(max, offSet, context, type, tags);
+			return Response.status(Status.OK).entity(resultList).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}

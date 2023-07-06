@@ -4,6 +4,7 @@
 package com.strandls.resource.services.Impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
 import com.strandls.resource.pojo.ResourceDataMediaGallery;
+import com.strandls.resource.pojo.ResourceListData;
 import com.strandls.resource.pojo.ResourceRating;
 import com.strandls.resource.pojo.SpeciesFieldResources;
 import com.strandls.resource.pojo.SpeciesPull;
@@ -582,9 +584,35 @@ public class ResourceServicesImpl implements ResourceServices {
 	}
 
 	@Override
-	public List<ResourceData> getAllResources(Integer limit, Integer offset) {
-		List<ResourceData> resultList = new ArrayList<>();
-		List<Resource> resources = resourceDao.findAll(limit, offset);
+	public ResourceListData getAllResources(Integer limit, Integer offset, String contexts, String mediaTypes,
+			String tags) {
+		ResourceListData result = null;
+		List<ResourceData> resourceDataList = new ArrayList<>();
+		List<Long> tagResourcesId = new ArrayList<>();
+
+		List<String> mediaTypeList = Arrays.asList(mediaTypes.split(","));
+		List<String> contextList = Arrays.asList(contexts.split(","));
+
+		List<Long> resourcesId = resourceDao.getResourceIds(contextList, mediaTypeList);
+		List<Long> commonResourcesId = resourcesId;
+
+		if (tags != null && !tags.isEmpty() && !tags.equals("all")) {
+			try {
+				for (String context : contextList) {
+					tagResourcesId = utilityServiceApi.getResourceIds(tags, context.toLowerCase());
+				}
+
+				commonResourcesId = resourcesId.stream().filter(tagResourcesId::contains).collect(Collectors.toList());
+
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+			}
+		}
+
+
+		List<Resource> resources = resourceDao.findByIds(commonResourcesId, limit, offset);
+		Long totalCount = (long) commonResourcesId.size();
+
 		for (Resource item : resources) {
 			ResourceData resourceData = new ResourceData();
 			try {
@@ -594,9 +622,11 @@ public class ResourceServicesImpl implements ResourceServices {
 			}
 
 			resourceData.setResource(item);
-			resultList.add(resourceData);
+			resourceDataList.add(resourceData);
 		}
-		return resultList;
+		result = new ResourceListData(resourceDataList, totalCount);
+
+		return result;
 	}
 
 }
