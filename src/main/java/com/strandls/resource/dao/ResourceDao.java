@@ -84,11 +84,11 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 		try {
 			Query<Long> query = session.createQuery(qry);
 
-			if (contexts != null && !contexts.isEmpty()) {
+			if (contexts != null && !contexts.isEmpty() && !contexts.contains("all")) {
 				query.setParameterList("contexts", contexts);
 			}
 
-			if (types != null && !types.isEmpty()) {
+			if (types != null && !types.isEmpty() && !types.contains("all")) {
 				query.setParameterList("types", types);
 			}
 
