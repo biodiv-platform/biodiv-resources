@@ -8,7 +8,9 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import com.strandls.resource.pojo.License;
+import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
+import com.strandls.resource.pojo.MediaGalleryResourceMapData;
 import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
@@ -58,8 +60,17 @@ public interface ResourceServices {
 
 	public MediaGalleryShow createMedia(HttpServletRequest request, MediaGalleryCreate mediaGalleryCreate);
 
-	public List<MediaGalleryShow> getAllMediaGallery();
+	public ResourceListData getAllResources(Integer limit, Integer offset, String context, String mediaTypes,
+			String tags, String users);
 
-	public ResourceListData getAllResources(Integer limit, Integer offset, String context, String type, String tags);
+	public String deleteMediaByID(HttpServletRequest request, Long mId);
+
+	public MediaGalleryShow getMediaByID(Long mId, Integer max, Integer offSet, String mediaTypes, String tags,
+			String users);
+
+	public MediaGallery updateMediaGalleryByID(HttpServletRequest request, MediaGallery mediaGallery);
+
+	public MediaGallery createBulkResourceMapping(HttpServletRequest request, Long mId,
+			MediaGalleryResourceMapData mediaGalleryResourceMapData);
 
 }

@@ -68,7 +68,7 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Long> getResourceIds(List<String> contexts, List<String> types) {
+	public List<Long> getResourceIds(List<String> contexts, List<String> types, List<Long> users, List<Long> ids) {
 		String qry = "SELECT R.id FROM Resource R WHERE 1=1";
 
 		if (contexts != null && !contexts.isEmpty() && !contexts.contains("all")) {
@@ -77,6 +77,14 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 
 		if (types != null && !types.isEmpty() && !types.contains("all")) {
 			qry += " AND R.type IN (:types)";
+		}
+
+		if (users != null && !users.isEmpty()) {
+			qry += " AND R.uploaderId IN (:users)";
+		}
+
+		if (ids != null && !ids.isEmpty()) {
+			qry += " AND R.id IN (:ids)";
 		}
 
 		List<Long> resourceIds = null;
@@ -90,6 +98,14 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 
 			if (types != null && !types.isEmpty() && !types.contains("all")) {
 				query.setParameterList("types", types);
+			}
+
+			if (users != null && !users.isEmpty()) {
+				query.setParameterList("users", users);
+			}
+
+			if (ids != null && !ids.isEmpty()) {
+				query.setParameterList("ids", ids);
 			}
 
 			resourceIds = query.getResultList();

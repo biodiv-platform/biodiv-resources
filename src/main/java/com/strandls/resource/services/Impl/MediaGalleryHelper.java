@@ -21,7 +21,7 @@ import com.strandls.resource.Headers;
 import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
 import com.strandls.resource.pojo.Resource;
-import com.strandls.resource.pojo.ResourceDataMediaGallery;
+import com.strandls.resource.pojo.ResourceWithTags;
 import com.strandls.utility.controller.UtilityServiceApi;
 import com.strandls.utility.pojo.TagsMappingData;
 
@@ -63,7 +63,7 @@ public class MediaGalleryHelper {
 
 	@SuppressWarnings("unchecked")
 	public List<Resource> createResourceMapping(HttpServletRequest request, Long userId,
-			ResourceDataMediaGallery resourceData) {
+			ResourceWithTags resourceData) {
 		List<Resource> resources = new ArrayList<>();
 		try {
 			List<String> fileList = new ArrayList<>();
@@ -158,6 +158,17 @@ public class MediaGalleryHelper {
 		utilityServices = headers.addUtilityHeaders(utilityServices, request.getHeader(HttpHeaders.AUTHORIZATION));
 		try {
 			utilityServices.createTags("resource", tagsMappingData);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+	}
+
+	public void updateTagsMapping(HttpServletRequest request, TagsMappingData tagsMappingData) {
+
+		utilityServices = headers.addUtilityHeaders(utilityServices, request.getHeader(HttpHeaders.AUTHORIZATION));
+		try {
+			utilityServices.updateTags("resource", tagsMappingData);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}

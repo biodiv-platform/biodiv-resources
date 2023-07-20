@@ -10,13 +10,16 @@ import java.util.List;
 public class ResourceListData {
 
 	private List<ResourceData> resourceDataList;
-	private long totalCount;
+	private Long totalCount;
 
-	public ResourceListData(List<ResourceData> resourceDataList, long totalCount) {
+	public ResourceListData() {
 		super();
-		this.setResourceDataList(resourceDataList);
-		this.setTotalCount(totalCount);
+	}
 
+	public ResourceListData(List<ResourceData> resourceDataList, Long totalCount) {
+		super();
+		this.resourceDataList = resourceDataList;
+		this.totalCount = totalCount;
 	}
 
 	public List<ResourceData> getResourceDataList() {
