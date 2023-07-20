@@ -511,7 +511,7 @@ public class ResourceController {
 
 	@PUT
 	@Path("/mediaGallery/bulkResourceMapping/{mediaGalleryId}")
-	@Consumes(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Update Media Gallery", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
