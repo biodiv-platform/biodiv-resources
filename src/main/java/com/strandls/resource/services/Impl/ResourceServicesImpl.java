@@ -720,4 +720,9 @@ public class ResourceServicesImpl implements ResourceServices {
 		return mediaGallery;
 	}
 
+	@Override
+	public List<MediaGallery> getAllMediaGallery() {
+		return mediaGalleryDao.findAll();
+	}
+
 }

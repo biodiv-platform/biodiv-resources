@@ -73,4 +73,6 @@ public interface ResourceServices {
 	public MediaGallery createBulkResourceMapping(HttpServletRequest request, Long mId,
 			MediaGalleryResourceMapData mediaGalleryResourceMapData);
 
+	public List<MediaGallery> getAllMediaGallery();
+
 }
