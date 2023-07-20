@@ -714,7 +714,11 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		if (mediaGallery != null) {
 			List<Resource> resources = resourceDao.findByIds(mediaGalleryResourceMapData.getResourceIds(), -1, -1);
-			createResource(Constants.MEDIAGALLERY, mId, resources);
+			for (Resource resource : resources) {
+				MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
+				mediaGalleryResourceDao.save(entity);
+			}
+
 		}
 
 		return mediaGallery;
