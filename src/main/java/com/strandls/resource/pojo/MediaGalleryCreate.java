@@ -20,7 +20,7 @@ public class MediaGalleryCreate {
 	private Date createdOn;
 	private Date updatedOn;
 
-	private List<ResourceDataMediaGallery> resourcesList;
+	private List<ResourceWithTags> resourcesList;
 
 	public Date getCreatedOn() {
 		return createdOn;
@@ -62,11 +62,11 @@ public class MediaGalleryCreate {
 		this.isDeleted = isDeleted;
 	}
 
-	public List<ResourceDataMediaGallery> getResourcesList() {
+	public List<ResourceWithTags> getResourcesList() {
 		return resourcesList;
 	}
 
-	public void setResourcesList(List<ResourceDataMediaGallery> resourcesList) {
+	public void setResourcesList(List<ResourceWithTags> resourcesList) {
 		this.resourcesList = resourcesList;
 	}
 

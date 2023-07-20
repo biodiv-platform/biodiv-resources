@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.strandls.utility.pojo.Tags;
 
-public class ResourceDataMediaGallery {
+public class ResourceWithTags {
 
 	private String path;
 	private String url;
@@ -21,7 +21,7 @@ public class ResourceDataMediaGallery {
 	/**
 	 * 
 	 */
-	public ResourceDataMediaGallery() {
+	public ResourceWithTags() {
 		super();
 	}
 
@@ -36,8 +36,8 @@ public class ResourceDataMediaGallery {
 	 * @param contributor
 	 * @param tags
 	 */
-	public ResourceDataMediaGallery(String path, String url, String type, String caption, Integer rating,
-			Long licenseId, String context, Long languageId, String contributor, List<Tags> tags) {
+	public ResourceWithTags(String path, String url, String type, String caption, Integer rating, Long licenseId,
+			String context, Long languageId, String contributor, List<Tags> tags) {
 		super();
 		this.path = path;
 		this.url = url;
@@ -133,7 +133,7 @@ public class ResourceDataMediaGallery {
 
 	@Override
 	public String toString() {
-		return "ResourceDataMedia [path=" + path + ", url=" + url + ", type=" + type + ", caption=" + caption
+		return "ResourceWithTags [path=" + path + ", url=" + url + ", type=" + type + ", caption=" + caption
 				+ ", licenseId=" + licenseId + ", context=" + context + ", languageId=" + languageId + ", contributor="
 				+ contributor + "]" + ", tags=" + tags;
 	}
