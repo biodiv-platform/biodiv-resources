@@ -65,7 +65,7 @@ public interface ResourceServices {
 
 	public String deleteMediaByID(HttpServletRequest request, Long mId);
 
-	public MediaGalleryShow getMediaByID(Long mId, Integer max, Integer offSet, String mediaTypes, String tags,
+	public MediaGalleryShow getMediaByID(String mId, Integer max, Integer offSet, String mediaTypes, String tags,
 			String users);
 
 	public MediaGallery updateMediaGalleryByID(HttpServletRequest request, MediaGallery mediaGallery);
