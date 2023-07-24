@@ -63,6 +63,29 @@ public class MediaGalleryResourceDao extends AbstractDAO<MediaGalleryResource, L
 	}
 
 	@SuppressWarnings("unchecked")
+	public List<Long> findByMediaIds(List<Long> mediaGalleryIds) {
+		List<MediaGalleryResource> mediaGalleryResourceList = null;
+		String qry = "from MediaGalleryResource where mediaGalleryId IN :mediaGalleryIds";
+		Session session = sessionFactory.openSession();
+		List<Long> result = new ArrayList<>();
+		try {
+			Query<MediaGalleryResource> query = session.createQuery(qry);
+			query.setParameter("mediaGalleryIds", mediaGalleryIds);
+			mediaGalleryResourceList = query.getResultList();
+			if (mediaGalleryResourceList != null && !mediaGalleryResourceList.isEmpty()) {
+				for (MediaGalleryResource mediaGalleryResource : mediaGalleryResourceList) {
+					result.add(mediaGalleryResource.getResourceId());
+				}
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
 	public MediaGalleryResource findByPair(Long mediaGalleryId, Long resourceId) {
 		String qry = "from MediaGalleryResource where mediaGalleryId = :mediaGalleryId and resourceId = :resourceId";
 		Session session = sessionFactory.openSession();

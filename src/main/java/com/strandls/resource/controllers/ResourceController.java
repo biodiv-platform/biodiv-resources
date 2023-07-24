@@ -399,33 +399,30 @@ public class ResourceController {
 	}
 
 	@GET
-	@Path("/mediaGallery" + "/{mediaGalleryId}")
+	@Path("/mediaGallery/show")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Find Media Resource by  ID", notes = "Returns Media Gallery", response = ResourceData.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
 
-	public Response getMediaGallery(
-			@ApiParam(value = "ID  for Resource", required = true) @PathParam("mediaGalleryId") String mediaGalleryId,
-			@DefaultValue("0") @QueryParam("offset") String offset,
+	public Response getMediaGallery(@DefaultValue("0") @QueryParam("offset") String offset,
 			@DefaultValue("12") @QueryParam("limit") String limit, @DefaultValue("all") @QueryParam("type") String type,
-			@DefaultValue("all") @QueryParam("tags") String tags,
-			@DefaultValue("all") @QueryParam("user") String users) {
+			@DefaultValue("all") @QueryParam("tags") String tags, @DefaultValue("all") @QueryParam("user") String users,
+			@DefaultValue("all") @QueryParam("mId") String mIds) {
 		try {
 
-			Long mId = Long.parseLong(mediaGalleryId);
 			Integer max = Integer.parseInt(limit);
 			Integer offSet = Integer.parseInt(offset);
 
-			MediaGalleryShow mediaGallery = service.getMediaByID(mId, max, offSet, type, tags, users);
+			MediaGalleryShow mediaGallery = service.getMediaByID(mIds, max, offSet, type, tags, users);
 
 			return Response.status(Status.OK).entity(mediaGallery).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 	}
-	
+
 	@GET
 	@Path("/mediaGallery/all")
 	@Consumes(MediaType.TEXT_PLAIN)
