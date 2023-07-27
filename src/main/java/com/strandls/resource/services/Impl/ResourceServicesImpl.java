@@ -723,21 +723,30 @@ public class ResourceServicesImpl implements ResourceServices {
 	}
 
 	@Override
-	public MediaGallery createBulkResourceMapping(HttpServletRequest request, Long mId,
+	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request,
 			MediaGalleryResourceMapData mediaGalleryResourceMapData) {
 
-		MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
+		List<Long> mIdList = mediaGalleryResourceMapData.getMediaGalleryIds();
 
-		if (mediaGallery != null) {
+		List<MediaGallery> mediaGalleryList = new ArrayList<>();
+
+		if (!mIdList.isEmpty()) {
 			List<Resource> resources = resourceDao.findByIds(mediaGalleryResourceMapData.getResourceIds(), -1, -1);
-			for (Resource resource : resources) {
-				MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
-				mediaGalleryResourceDao.save(entity);
-			}
 
+			for (Long mId : mIdList) {
+				MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
+
+				if (mediaGallery != null) {
+					for (Resource resource : resources) {
+						MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
+						mediaGalleryResourceDao.save(entity);
+					}
+					mediaGalleryList.add(mediaGallery);
+				}
+			}
 		}
 
-		return mediaGallery;
+		return mediaGalleryList;
 	}
 
 	@Override

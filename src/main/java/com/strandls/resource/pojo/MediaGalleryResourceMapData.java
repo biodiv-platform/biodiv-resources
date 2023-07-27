@@ -9,6 +9,7 @@ import java.util.List;
 public class MediaGalleryResourceMapData {
 
 	public List<Long> resourceIds;
+	public List<Long> mediaGalleryIds;
 
 	/**
 	 * 
@@ -21,17 +22,27 @@ public class MediaGalleryResourceMapData {
 	 * @param resourceIds
 	 */
 
-	public MediaGalleryResourceMapData(List<Long> resourceIds) {
+	public MediaGalleryResourceMapData(List<Long> resourceIds, List<Long> mediaGalleryIds) {
 		super();
 		this.resourceIds = resourceIds;
+		this.mediaGalleryIds = mediaGalleryIds;
+
 	}
 
 	public List<Long> getResourceIds() {
 		return resourceIds;
 	}
 
-	public void setResourceIds(List<Long> resourceIds) {
-		this.resourceIds = resourceIds;
+	public void setResourceIds(List<Long> mediaGalleryIds) {
+		this.mediaGalleryIds = mediaGalleryIds;
+	}
+
+	public List<Long> getMediaGalleryIds() {
+		return resourceIds;
+	}
+
+	public void setMediaGalleryIds(List<Long> mediaGalleryIds) {
+		this.mediaGalleryIds = mediaGalleryIds;
 	}
 
 }

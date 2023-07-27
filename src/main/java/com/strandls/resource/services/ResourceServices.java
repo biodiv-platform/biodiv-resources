@@ -70,7 +70,7 @@ public interface ResourceServices {
 
 	public MediaGallery updateMediaGalleryByID(HttpServletRequest request, MediaGallery mediaGallery);
 
-	public MediaGallery createBulkResourceMapping(HttpServletRequest request, Long mId,
+	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request,
 			MediaGalleryResourceMapData mediaGalleryResourceMapData);
 
 	public List<MediaGallery> getAllMediaGallery();
