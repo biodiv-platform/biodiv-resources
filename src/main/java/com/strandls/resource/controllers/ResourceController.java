@@ -507,22 +507,18 @@ public class ResourceController {
 	}
 
 	@PUT
-	@Path("/mediaGallery/bulkResourceMapping/{mediaGalleryId}")
+	@Path("/mediaGallery/bulkResourceMapping")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Update Media Gallery", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
+	@ApiOperation(value = "Update Media Galleries", notes = "Returns Media Galleries", response = ResourceData.class, responseContainer = "List")
 	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "Unable TO update Media Gallery", response = String.class) })
+			@ApiResponse(code = 400, message = "Unable TO update Media Galleries", response = String.class) })
 
 	public Response mediaGalleryBulkResourceMapping(@Context HttpServletRequest request,
-			@PathParam("mediaGalleryId") String mediaGalleryId,
 			@ApiParam(name = "mediaGalleryResourceMap") MediaGalleryResourceMapData mediaGalleryResourceMapData) {
 		try {
-
-			Long mId = Long.parseLong(mediaGalleryId);
-
-			MediaGallery createBulkResourceMapping = service.createBulkResourceMapping(request, mId,
+			List<MediaGallery> createBulkResourceMapping = service.createBulkResourceMapping(request,
 					mediaGalleryResourceMapData);
 			return Response.status(Status.OK).entity(createBulkResourceMapping).build();
 		} catch (Exception e) {
