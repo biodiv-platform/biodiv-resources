@@ -33,12 +33,12 @@ public class MediaGalleryResourceMapData {
 		return resourceIds;
 	}
 
-	public void setResourceIds(List<Long> mediaGalleryIds) {
-		this.mediaGalleryIds = mediaGalleryIds;
+	public void setResourceIds(List<Long> resourceIds) {
+		this.resourceIds = resourceIds;
 	}
 
 	public List<Long> getMediaGalleryIds() {
-		return resourceIds;
+		return mediaGalleryIds;
 	}
 
 	public void setMediaGalleryIds(List<Long> mediaGalleryIds) {

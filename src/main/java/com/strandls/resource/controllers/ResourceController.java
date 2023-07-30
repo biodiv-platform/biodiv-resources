@@ -442,6 +442,66 @@ public class ResourceController {
 	}
 
 	@GET
+	@Path("/show/{resourceId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find Resource data by id ", notes = "Returns Resource data", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
+
+	public Response getAllResources(@PathParam("resourceId") String resourceId) {
+		try {
+
+			Long rID = Long.parseLong(resourceId);
+
+			ResourceData resultList = service.getResourceData(rID);
+			return Response.status(Status.OK).entity(resultList).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@PUT
+	@Path("/update")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Update Resource data  ", notes = "Returns Resource data", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to update the data", response = String.class) })
+
+	public Response updateResourceData(@Context HttpServletRequest request,
+			@ApiParam(name = "mediaGallery") ResourceData resourceData) {
+		try {
+
+			ResourceData resultList = service.updateResourceData(request, resourceData);
+			return Response.status(Status.OK).entity(resultList).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@DELETE
+	@Path("/delete/{resourceId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Delete Resource data by id  ", notes = "Returns Resource data", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
+
+	public Response deleteResourceData(@Context HttpServletRequest request,
+			@PathParam("resourceId") String resourceId) {
+		try {
+
+			Long rID = Long.parseLong(resourceId);
+
+			String resultList = service.deleteResourceData(request, rID);
+			return Response.status(Status.OK).entity(resultList).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@GET
 	@Path("/all")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -511,9 +571,9 @@ public class ResourceController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Update Media Galleries", notes = "Returns Media Galleries", response = ResourceData.class, responseContainer = "List")
+	@ApiOperation(value = "Update Media Galleries", notes = "Returns Media Galleries", response = MediaGallery.class, responseContainer = "List")
 	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "Unable TO update Media Galleries", response = String.class) })
+			@ApiResponse(code = 400, message = "Unable To update Media Galleries", response = String.class) })
 
 	public Response mediaGalleryBulkResourceMapping(@Context HttpServletRequest request,
 			@ApiParam(name = "mediaGalleryResourceMap") MediaGalleryResourceMapData mediaGalleryResourceMapData) {
