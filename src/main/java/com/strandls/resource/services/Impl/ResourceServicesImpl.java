@@ -553,15 +553,10 @@ public class ResourceServicesImpl implements ResourceServices {
 				List<Resource> resourceList = createResource(Constants.MEDIAGALLERY, mediaGallery.getId(), resources);
 
 				if (!(resourceDataMediaGallery.getTags().isEmpty())) {
-					for (Resource resourceData : resourceList) {
+					for (Resource resourceItem : resourceList) {
 
-						TagsMapping tagsMapping = new TagsMapping();
-						tagsMapping.setObjectId(resourceData.getId());
-						tagsMapping.setTags(resourceDataMediaGallery.getTags());
-
-						TagsMappingData tagMappingData = new TagsMappingData();
-						tagMappingData.setTagsMapping(tagsMapping);
-						tagMappingData.setMailData(null);
+						TagsMappingData tagMappingData = createTagsMappingData(resourceItem.getId(),
+								resourceDataMediaGallery.getTags());
 
 						mediaGalleryHelper.createTagsMapping(request, tagMappingData);
 					}
@@ -700,10 +695,14 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	@Override
 	public String deleteMediaByID(HttpServletRequest request, Long mId) {
+		try {
+			MediaGallery mediaGallerry = mediaGalleryDao.findById(mId);
+			mediaGalleryDao.delete(mediaGallerry);
+			return "Media Gallery Deleted Sucessfully";
 
-		MediaGallery mediaGallerry = mediaGalleryDao.findById(mId);
-		mediaGalleryDao.delete(mediaGallerry);
-
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
 		return null;
 	}
 
@@ -750,6 +749,73 @@ public class ResourceServicesImpl implements ResourceServices {
 	@Override
 	public List<MediaGallery> getAllMediaGallery() {
 		return mediaGalleryDao.findAll();
+	}
+
+	@Override
+	public ResourceData getResourceData(Long rID) {
+		ResourceData resourceData = new ResourceData();
+		Resource resource = resourceDao.findById(rID);
+
+		resourceData.setResource(resource);
+
+		try {
+			resourceData.setUserIbp(userService.getUserIbp(resource.getUploaderId().toString()));
+			resourceData.setTags(utilityServiceApi.getTags("resource", rID.toString()));
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return resourceData;
+	}
+
+	@Override
+	public ResourceData updateResourceData(HttpServletRequest request, ResourceData resourceData) {
+		Resource resource = resourceDao.findById(resourceData.getResource().getId());
+		resource.setDescription(resourceData.getResource().getDescription());
+		resource.setLicenseId(resourceData.getResource().getLicenseId());
+
+		resourceDao.update(resource);
+
+		TagsMappingData tagMappingData = createTagsMappingData(resource.getId(), resourceData.getTags());
+
+		try {
+			utilityServiceApi.updateTags("resource", tagMappingData);
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return getResourceData(resourceData.getResource().getId());
+	}
+
+	@Override
+	public String deleteResourceData(HttpServletRequest request, Long rID) {
+		Resource resource = resourceDao.findById(rID);
+		TagsMappingData tagMappingData = createTagsMappingData(resource.getId(), new ArrayList<>());
+
+		try {
+			utilityServiceApi.updateTags("resource", tagMappingData);
+			resourceDao.delete(resource);
+			return "Resource Deleted Sucessfully";
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return null;
+	}
+
+	private TagsMappingData createTagsMappingData(Long objectId, List<Tags> tags) {
+		TagsMapping tagsMapping = new TagsMapping();
+		tagsMapping.setObjectId(objectId);
+		tagsMapping.setTags(tags);
+
+		TagsMappingData tagMappingData = new TagsMappingData();
+		tagMappingData.setTagsMapping(tagsMapping);
+		tagMappingData.setMailData(null);
+
+		return tagMappingData;
 	}
 
 }

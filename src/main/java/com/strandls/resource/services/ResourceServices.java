@@ -75,4 +75,10 @@ public interface ResourceServices {
 
 	public List<MediaGallery> getAllMediaGallery();
 
+	public ResourceData getResourceData(Long rID);
+
+	public ResourceData updateResourceData(HttpServletRequest request, ResourceData resourceData);
+
+	public String deleteResourceData(HttpServletRequest request, Long rID);
+
 }
