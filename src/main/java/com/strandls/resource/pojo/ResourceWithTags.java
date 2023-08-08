@@ -2,7 +2,10 @@ package com.strandls.resource.pojo;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.strandls.utility.pojo.Tags;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 
 public class ResourceWithTags {
 
@@ -17,6 +20,7 @@ public class ResourceWithTags {
 	private String contributor;
 
 	private List<Tags> tags;
+	private List<Long> mId;
 
 	/**
 	 * 
@@ -35,9 +39,10 @@ public class ResourceWithTags {
 	 * @param languageId
 	 * @param contributor
 	 * @param tags
+	 * @param mId
 	 */
 	public ResourceWithTags(String path, String url, String type, String caption, Integer rating, Long licenseId,
-			String context, Long languageId, String contributor, List<Tags> tags) {
+			String context, Long languageId, String contributor, List<Tags> tags, List<Long> mId) {
 		super();
 		this.path = path;
 		this.url = url;
@@ -49,6 +54,7 @@ public class ResourceWithTags {
 		this.languageId = languageId;
 		this.contributor = contributor;
 		this.tags = tags;
+		this.mId = mId;
 	}
 
 	public String getPath() {
@@ -129,6 +135,14 @@ public class ResourceWithTags {
 
 	public void setTags(List<Tags> tags) {
 		this.tags = tags;
+	}
+
+	public List<Long> getmId() {
+		return mId;
+	}
+
+	public void setmId(List<Long> mId) {
+		this.mId = mId;
 	}
 
 	@Override

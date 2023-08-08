@@ -60,6 +60,8 @@ import com.strandls.utility.pojo.Tags;
 import com.strandls.utility.pojo.TagsMapping;
 import com.strandls.utility.pojo.TagsMappingData;
 
+import net.minidev.json.JSONArray;
+
 /**
  * @author Abhishek Rudra
  *
@@ -533,38 +535,91 @@ public class ResourceServicesImpl implements ResourceServices {
 	@Override
 	public MediaGalleryShow createMedia(HttpServletRequest request, MediaGalleryCreate mediaGalleryCreate) {
 		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+
+		JSONArray roles = (JSONArray) profile.getAttribute("roles");
+
+		if (!roles.contains("ROLE_ADMIN")) {
+			return null;
+		}
+
 		Long userId = Long.parseLong(profile.getId());
+		MediaGallery mediaGallery = new MediaGallery();
 
-		MediaGallery mediaGallery = mediaGalleryHelper.createMediaGalleryMapping(userId, mediaGalleryCreate);
-		mediaGalleryDao.save(mediaGallery);
+		try {
+			mediaGallery = mediaGalleryHelper.createMediaGalleryMapping(userId, mediaGalleryCreate);
+			mediaGalleryDao.save(mediaGallery);
 
-		if (!(mediaGalleryCreate.getResourcesList().isEmpty())) {
-			for (ResourceWithTags resourceDataMediaGallery : mediaGalleryCreate.getResourcesList()) {
+			if (mediaGallery == null) {
+				return null;
+			}
 
-				List<Resource> resources = mediaGalleryHelper.createResourceMapping(request, userId,
-						resourceDataMediaGallery);
+			List<ResourceWithTags> resourceList = mediaGalleryCreate.getResourcesList();
 
-				if (resources == null || resources.isEmpty()) {
-					mediaGalleryDao.delete(mediaGallery);
-					return null;
+			if (!resourceList.isEmpty()) {
 
+				for (ResourceWithTags resourceDataMediaGallery : resourceList) {
+					List<Resource> resources = mediaGalleryHelper.createResourceMapping(request, userId,
+							resourceDataMediaGallery);
+
+					if (resources != null && !resources.isEmpty()) {
+
+						List<Resource> createdResourceList = createResource(Constants.MEDIAGALLERY,
+								mediaGallery.getId(), resources);
+
+						if (!resourceDataMediaGallery.getTags().isEmpty()) {
+							batchProcessTags(request, resourceDataMediaGallery.getTags(), createdResourceList);
+						}
+					}
 				}
 
-				List<Resource> resourceList = createResource(Constants.MEDIAGALLERY, mediaGallery.getId(), resources);
+			}
+			return getMediaByID(mediaGallery.getId());
 
-				if (!(resourceDataMediaGallery.getTags().isEmpty())) {
-					for (Resource resourceItem : resourceList) {
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
 
-						TagsMappingData tagMappingData = createTagsMappingData(resourceItem.getId(),
-								resourceDataMediaGallery.getTags());
+	}
 
-						mediaGalleryHelper.createTagsMapping(request, tagMappingData);
+	@Override
+	public String uploadMedia(HttpServletRequest request, List<ResourceWithTags> resourceUpload) {
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+		Long userId = Long.parseLong(profile.getId());
+
+		if (resourceUpload.isEmpty()) {
+			return null;
+		}
+
+		for (ResourceWithTags resourceDataMediaGallery : resourceUpload) {
+			List<Resource> resources = mediaGalleryHelper.createResourceMapping(request, userId,
+					resourceDataMediaGallery);
+
+			if (resources != null) {
+				List<Resource> createdResourceList = new ArrayList<>();
+
+				List<Long> mIds = resourceDataMediaGallery.getmId();
+				if (mIds != null) {
+					for (Long mId : mIds) {
+						createdResourceList.addAll(createResource(Constants.MEDIAGALLERY, mId, resources));
 					}
+				}
+
+				List<Tags> tags = resourceDataMediaGallery.getTags();
+				if (!tags.isEmpty()) {
+					batchProcessTags(request, tags, createdResourceList);
 				}
 			}
 		}
 
-		return getMediaByID(mediaGallery.getId());
+		return "Resource Uploaded Successfully";
+	}
+
+	private void batchProcessTags(HttpServletRequest request, List<Tags> tags, List<Resource> resourceList) {
+		resourceList.forEach(resourceItem -> {
+			TagsMappingData tagMappingData = createTagsMappingData(resourceItem.getId(), tags);
+			mediaGalleryHelper.createTagsMapping(request, tagMappingData);
+		});
 	}
 
 	@Override

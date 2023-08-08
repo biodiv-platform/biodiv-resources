@@ -17,6 +17,7 @@ import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
 import com.strandls.resource.pojo.ResourceListData;
 import com.strandls.resource.pojo.ResourceRating;
+import com.strandls.resource.pojo.ResourceWithTags;
 import com.strandls.resource.pojo.SpeciesPull;
 import com.strandls.resource.pojo.SpeciesResourcePulling;
 import com.strandls.resource.pojo.UFile;
@@ -80,5 +81,7 @@ public interface ResourceServices {
 	public ResourceData updateResourceData(HttpServletRequest request, ResourceData resourceData);
 
 	public String deleteResourceData(HttpServletRequest request, Long rID);
+
+	public String uploadMedia(HttpServletRequest request, List<ResourceWithTags> resourceUpload);
 
 }
