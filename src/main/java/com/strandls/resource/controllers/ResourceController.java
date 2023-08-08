@@ -34,6 +34,7 @@ import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
 import com.strandls.resource.pojo.ResourceListData;
 import com.strandls.resource.pojo.ResourceRating;
+import com.strandls.resource.pojo.ResourceWithTags;
 import com.strandls.resource.pojo.SpeciesPull;
 import com.strandls.resource.pojo.SpeciesResourcePulling;
 import com.strandls.resource.pojo.UFile;
@@ -377,7 +378,7 @@ public class ResourceController {
 	}
 
 	@POST
-	@Path("/media" + ApiConstants.CREATE)
+	@Path("/mediaGallery" + ApiConstants.CREATE)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -393,6 +394,28 @@ public class ResourceController {
 			if (result != null)
 				return Response.status(Status.OK).entity(result).build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("Data missing").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path("/mediaGallery/upload")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "create the Ufile object", notes = "return the ufile object on completion", response = UFile.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to create the ufile", response = String.class) })
+
+	public Response uploadResourceMediaGallery(@Context HttpServletRequest request,
+			@ApiParam(name = "ufileCreateData") List<ResourceWithTags> resourceUpload) {
+		try {
+			String result = service.uploadMedia(request, resourceUpload);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Error Uploading").build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
