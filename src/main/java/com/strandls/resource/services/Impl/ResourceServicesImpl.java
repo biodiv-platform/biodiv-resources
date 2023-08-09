@@ -57,7 +57,6 @@ import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.UserIbp;
 import com.strandls.utility.controller.UtilityServiceApi;
 import com.strandls.utility.pojo.Tags;
-import com.strandls.utility.pojo.TagsMapping;
 import com.strandls.utility.pojo.TagsMappingData;
 
 import net.minidev.json.JSONArray;
@@ -557,24 +556,8 @@ public class ResourceServicesImpl implements ResourceServices {
 
 			List<ResourceWithTags> resourceList = mediaGalleryCreate.getResourcesList();
 
-			if (!resourceList.isEmpty()) {
+			mediaGalleryHelper.createResourceMapping(request, userId, resourceList, mediaGallery.getId());
 
-				for (ResourceWithTags resourceDataMediaGallery : resourceList) {
-					List<Resource> resources = mediaGalleryHelper.createResourceMapping(request, userId,
-							resourceDataMediaGallery);
-
-					if (resources != null && !resources.isEmpty()) {
-
-						List<Resource> createdResourceList = createResource(Constants.MEDIAGALLERY,
-								mediaGallery.getId(), resources);
-
-						if (!resourceDataMediaGallery.getTags().isEmpty()) {
-							batchProcessTags(request, resourceDataMediaGallery.getTags(), createdResourceList);
-						}
-					}
-				}
-
-			}
 			return getMediaByID(mediaGallery.getId());
 
 		} catch (Exception e) {
@@ -593,35 +576,9 @@ public class ResourceServicesImpl implements ResourceServices {
 			return null;
 		}
 
-		for (ResourceWithTags resourceDataMediaGallery : resourceUpload) {
-			List<Resource> resources = mediaGalleryHelper.createResourceMapping(request, userId,
-					resourceDataMediaGallery);
-
-			if (resources != null) {
-				List<Resource> createdResourceList = new ArrayList<>();
-
-				List<Long> mIds = resourceDataMediaGallery.getmId();
-				if (mIds != null) {
-					for (Long mId : mIds) {
-						createdResourceList.addAll(createResource(Constants.MEDIAGALLERY, mId, resources));
-					}
-				}
-
-				List<Tags> tags = resourceDataMediaGallery.getTags();
-				if (!tags.isEmpty()) {
-					batchProcessTags(request, tags, createdResourceList);
-				}
-			}
-		}
+		mediaGalleryHelper.createResourceMapping(request, userId, resourceUpload, null);
 
 		return "Resource Uploaded Successfully";
-	}
-
-	private void batchProcessTags(HttpServletRequest request, List<Tags> tags, List<Resource> resourceList) {
-		resourceList.forEach(resourceItem -> {
-			TagsMappingData tagMappingData = createTagsMappingData(resourceItem.getId(), tags);
-			mediaGalleryHelper.createTagsMapping(request, tagMappingData);
-		});
 	}
 
 	@Override
@@ -834,7 +791,8 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		resourceDao.update(resource);
 
-		TagsMappingData tagMappingData = createTagsMappingData(resource.getId(), resourceData.getTags());
+		TagsMappingData tagMappingData = mediaGalleryHelper.createTagsMappingData(resource.getId(),
+				resourceData.getTags());
 
 		try {
 			utilityServiceApi.updateTags("resource", tagMappingData);
@@ -849,7 +807,7 @@ public class ResourceServicesImpl implements ResourceServices {
 	@Override
 	public String deleteResourceData(HttpServletRequest request, Long rID) {
 		Resource resource = resourceDao.findById(rID);
-		TagsMappingData tagMappingData = createTagsMappingData(resource.getId(), new ArrayList<>());
+		TagsMappingData tagMappingData = mediaGalleryHelper.createTagsMappingData(resource.getId(), new ArrayList<>());
 
 		try {
 			utilityServiceApi.updateTags("resource", tagMappingData);
@@ -861,18 +819,6 @@ public class ResourceServicesImpl implements ResourceServices {
 		}
 
 		return null;
-	}
-
-	private TagsMappingData createTagsMappingData(Long objectId, List<Tags> tags) {
-		TagsMapping tagsMapping = new TagsMapping();
-		tagsMapping.setObjectId(objectId);
-		tagsMapping.setTags(tags);
-
-		TagsMappingData tagMappingData = new TagsMappingData();
-		tagMappingData.setTagsMapping(tagsMapping);
-		tagMappingData.setMailData(null);
-
-		return tagMappingData;
 	}
 
 }

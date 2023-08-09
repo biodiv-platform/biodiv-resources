@@ -18,11 +18,16 @@ import com.strandls.authentication_utility.util.PropertyFileUtil;
 import com.strandls.file.api.UploadApi;
 import com.strandls.file.model.FilesDTO;
 import com.strandls.resource.Headers;
+import com.strandls.resource.dao.MediaGalleryResourceDao;
+import com.strandls.resource.dao.ResourceDao;
 import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
+import com.strandls.resource.pojo.MediaGalleryResource;
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceWithTags;
 import com.strandls.utility.controller.UtilityServiceApi;
+import com.strandls.utility.pojo.Tags;
+import com.strandls.utility.pojo.TagsMapping;
 import com.strandls.utility.pojo.TagsMappingData;
 
 public class MediaGalleryHelper {
@@ -36,6 +41,12 @@ public class MediaGalleryHelper {
 
 	@Inject
 	private UtilityServiceApi utilityServices;
+
+	@Inject
+	private ResourceDao resourceDao;
+
+	@Inject
+	private MediaGalleryResourceDao mediaGalleryResourceDao;
 
 	private Long defaultLanguageId = Long
 			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLanguageId"));
@@ -63,19 +74,22 @@ public class MediaGalleryHelper {
 
 	@SuppressWarnings("unchecked")
 	public List<Resource> createResourceMapping(HttpServletRequest request, Long userId,
-			ResourceWithTags resourceData) {
-		List<Resource> resources = new ArrayList<>();
-		try {
-			List<String> fileList = new ArrayList<>();
+			List<ResourceWithTags> resourceDataList, Long objectId) {
 
-			if (resourceData.getPath() != null && resourceData.getPath().trim().length() > 0) {
-				fileList.add(resourceData.getPath());
+		List<Resource> resources = new ArrayList<>();
+
+		try {
+
+			List<String> fileList = new ArrayList<>();
+			for (ResourceWithTags resourceData : resourceDataList) {
+
+				if (resourceData.getPath() != null && resourceData.getPath().trim().length() > 0) {
+					fileList.add(resourceData.getPath());
+				}
 			}
 
 			Map<String, Object> fileMap = new HashMap<>();
-
 			if (!fileList.isEmpty()) {
-				// Assuming fileUploadService is initialized somewhere in your code
 				fileUploadService = headers.addFileUploadHeader(fileUploadService,
 						request.getHeader(HttpHeaders.AUTHORIZATION));
 
@@ -86,64 +100,94 @@ public class MediaGalleryHelper {
 				fileMap = fileUploadService.moveFiles(filesDTO);
 			}
 
-			Resource resource = new Resource();
+			for (ResourceWithTags resourceData : resourceDataList) {
+				Resource resource = new Resource();
 
-			if (resourceData.getCaption() != null) {
-				resource.setDescription(
-						(resourceData.getCaption().trim().length() != 0) ? resourceData.getCaption().trim() : null);
-			}
-
-			if (resourceData.getPath() != null) {
-				if (fileMap != null && !fileMap.isEmpty() && fileMap.containsKey(resourceData.getPath())) {
-					// new path getting extracted from the map
-					System.out.println(fileMap);
-					Map<String, String> files = (Map<String, String>) fileMap.get(resourceData.getPath());
-					System.out.println(files);
-					String relativePath = files.get("name").toString();
-					resource.setFileName(relativePath);
-				} else if (resourceData.getPath().startsWith("/ibpmu")) {
-					// Skip the resource if it starts with "/ibpmu"
-					return resources;
-				} else {
-					resource.setFileName(resourceData.getPath());
+				if (resourceData.getCaption() != null) {
+					resource.setDescription(
+							(resourceData.getCaption().trim().length() != 0) ? resourceData.getCaption().trim() : null);
 				}
+
+				if (resourceData.getPath() != null) {
+					if (fileMap != null && !fileMap.isEmpty() && fileMap.containsKey(resourceData.getPath())) {
+						System.out.println(fileMap);
+						Map<String, String> files = (Map<String, String>) fileMap.get(resourceData.getPath());
+						System.out.println(files);
+						String relativePath = files.get("name").toString();
+						resource.setFileName(relativePath);
+					} else if (resourceData.getPath().startsWith("/ibpmu")) {
+						continue;
+					} else {
+						resource.setFileName(resourceData.getPath());
+					}
+				}
+
+				resource.setMimeType(null);
+
+				if (resourceData.getType().startsWith("image") || resourceData.getType().equalsIgnoreCase("image")) {
+					resource.setType("IMAGE");
+				} else if (resourceData.getType().startsWith("audio")
+						|| resourceData.getType().equalsIgnoreCase("audio")) {
+					resource.setType("AUDIO");
+				} else if (resourceData.getType().startsWith("video")
+						|| resourceData.getType().equalsIgnoreCase("video")) {
+					resource.setType("VIDEO");
+				}
+
+				if (resourceData.getPath() == null) {
+					resource.setFileName(resource.getType().substring(0, 1).toLowerCase());
+				}
+
+				resource.setUrl(resourceData.getUrl());
+				resource.setRating(resourceData.getRating());
+//				resource.setUploadTime(new Date());
+				resource.setUploaderId(userId);
+				resource.setContext("RESOURCE");
+
+				if (resourceData.getLanguageId() != null) {
+					resource.setLanguageId(resourceData.getLanguageId());
+				} else {
+					resource.setLanguageId(defaultLanguageId);
+				}
+
+				if (resourceData.getLicenseId() != null) {
+					resource.setLicenseId(resourceData.getLicenseId());
+				} else {
+					resource.setLicenseId(defaultLicenseId);
+				}
+
+				resource.setContributor(resourceData.getContributor());
+
+				resources.add(resource);
+
+				resource = resourceDao.save(resource);
+
+				if (resource != null) {
+					// To create a new Media Gallery
+					if (objectId != null) {
+						MediaGalleryResource entity = new MediaGalleryResource(objectId, resource.getId());
+						mediaGalleryResourceDao.save(entity);
+
+					}
+
+					// To upload images in a media Gallery
+					List<Long> mIds = resourceData.getmId();
+					if (mIds != null && !mIds.isEmpty()) {
+						for (Long mId : resourceData.getmId()) {
+							MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
+							mediaGalleryResourceDao.save(entity);
+						}
+					}
+
+					// To update tags
+					if (!resourceData.getTags().isEmpty()) {
+						TagsMappingData tagMappingData = createTagsMappingData(resource.getId(),
+								resourceData.getTags());
+						createTagsMapping(request, tagMappingData);
+					}
+				}
+
 			}
-
-			resource.setMimeType(null);
-
-			if (resourceData.getType().startsWith("image") || resourceData.getType().equalsIgnoreCase("image")) {
-				resource.setType("IMAGE");
-			} else if (resourceData.getType().startsWith("audio") || resourceData.getType().equalsIgnoreCase("audio")) {
-				resource.setType("AUDIO");
-			} else if (resourceData.getType().startsWith("video") || resourceData.getType().equalsIgnoreCase("video")) {
-				resource.setType("VIDEO");
-			}
-
-			if (resourceData.getPath() == null) {
-				resource.setFileName(resource.getType().substring(0, 1).toLowerCase());
-			}
-
-			resource.setUrl(resourceData.getUrl());
-			resource.setRating(resourceData.getRating());
-			// resource.setUploadTime(new Date());
-			resource.setUploaderId(userId);
-			resource.setContext("RESOURCE");
-
-			if (resourceData.getLanguageId() != null) {
-				resource.setLanguageId(resourceData.getLanguageId());
-			} else {
-				resource.setLanguageId(defaultLanguageId);
-			}
-
-			if (resourceData.getLicenseId() != null) {
-				resource.setLicenseId(resourceData.getLicenseId());
-			} else {
-				resource.setLicenseId(defaultLicenseId);
-			}
-
-			resource.setContributor(resourceData.getContributor());
-
-			resources.add(resource);
 
 			return resources;
 		} catch (Exception e) {
@@ -151,6 +195,18 @@ public class MediaGalleryHelper {
 		}
 
 		return Collections.emptyList();
+	}
+
+	public TagsMappingData createTagsMappingData(Long objectId, List<Tags> tags) {
+		TagsMapping tagsMapping = new TagsMapping();
+		tagsMapping.setObjectId(objectId);
+		tagsMapping.setTags(tags);
+
+		TagsMappingData tagMappingData = new TagsMappingData();
+		tagMappingData.setTagsMapping(tagsMapping);
+		tagMappingData.setMailData(null);
+
+		return tagMappingData;
 	}
 
 	public void createTagsMapping(HttpServletRequest request, TagsMappingData tagsMappingData) {
