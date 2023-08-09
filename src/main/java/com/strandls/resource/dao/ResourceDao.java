@@ -83,7 +83,7 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 			qry += " AND R.uploaderId IN (:users)";
 		}
 
-		if (ids != null && !ids.isEmpty()) {
+		if (ids != null) {
 			qry += " AND R.id IN (:ids)";
 		}
 
@@ -104,7 +104,7 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 				query.setParameterList("users", users);
 			}
 
-			if (ids != null && !ids.isEmpty()) {
+			if (ids != null) {
 				query.setParameterList("ids", ids);
 			}
 
