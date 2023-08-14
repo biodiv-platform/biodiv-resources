@@ -69,18 +69,13 @@ public interface ResourceServices {
 	public MediaGalleryShow getMediaByID(String mId, Integer max, Integer offSet, String mediaTypes, String tags,
 			String users);
 
-	public MediaGallery updateMediaGalleryByID(HttpServletRequest request, MediaGallery mediaGallery);
+	public MediaGalleryShow updateMediaGalleryByID(HttpServletRequest request, Long mediaGalleryId,
+			MediaGalleryShow mediaGallery);
 
 	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request,
 			MediaGalleryResourceMapData mediaGalleryResourceMapData);
 
 	public List<MediaGallery> getAllMediaGallery();
-
-	public ResourceData getResourceData(Long rID);
-
-	public ResourceData updateResourceData(HttpServletRequest request, ResourceData resourceData);
-
-	public String deleteResourceData(HttpServletRequest request, Long rID);
 
 	public String uploadMedia(HttpServletRequest request, List<ResourceWithTags> resourceUpload);
 

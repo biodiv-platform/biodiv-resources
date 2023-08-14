@@ -359,11 +359,11 @@ public class ResourceController {
 	}
 
 	@GET
-	@Path("/media" + "/{mId}")
+	@Path("/mediaGallery/editPage" + "/{mId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Find Media Reource by  ID", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
+	@ApiOperation(value = "Find Media Resource by  ID", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
 
 	public Response getMedia(@ApiParam(value = "ID  for Resource", required = true) @PathParam("mId") String mId) {
@@ -422,7 +422,7 @@ public class ResourceController {
 	}
 
 	@GET
-	@Path("/mediaGallery/show")
+	@Path("/mediaGallery/show/{mId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -432,13 +432,13 @@ public class ResourceController {
 	public Response getMediaGallery(@DefaultValue("0") @QueryParam("offset") String offset,
 			@DefaultValue("12") @QueryParam("limit") String limit, @DefaultValue("all") @QueryParam("type") String type,
 			@DefaultValue("all") @QueryParam("tags") String tags, @DefaultValue("all") @QueryParam("user") String users,
-			@DefaultValue("all") @QueryParam("mId") String mIds) {
+			@PathParam("mId") String mId) {
 		try {
 
 			Integer max = Integer.parseInt(limit);
 			Integer offSet = Integer.parseInt(offset);
 
-			MediaGalleryShow mediaGallery = service.getMediaByID(mIds, max, offSet, type, tags, users);
+			MediaGalleryShow mediaGallery = service.getMediaByID(mId, max, offSet, type, tags, users);
 
 			return Response.status(Status.OK).entity(mediaGallery).build();
 		} catch (Exception e) {
@@ -465,71 +465,11 @@ public class ResourceController {
 	}
 
 	@GET
-	@Path("/show/{resourceId}")
-	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "Find Resource data by id ", notes = "Returns Resource data", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
-
-	public Response getAllResources(@PathParam("resourceId") String resourceId) {
-		try {
-
-			Long rID = Long.parseLong(resourceId);
-
-			ResourceData resultList = service.getResourceData(rID);
-			return Response.status(Status.OK).entity(resultList).build();
-		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).build();
-		}
-	}
-
-	@PUT
-	@Path("/update")
-	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "Update Resource data  ", notes = "Returns Resource data", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to update the data", response = String.class) })
-
-	public Response updateResourceData(@Context HttpServletRequest request,
-			@ApiParam(name = "mediaGallery") ResourceData resourceData) {
-		try {
-
-			ResourceData resultList = service.updateResourceData(request, resourceData);
-			return Response.status(Status.OK).entity(resultList).build();
-		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).build();
-		}
-	}
-
-	@DELETE
-	@Path("/delete/{resourceId}")
-	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "Delete Resource data by id  ", notes = "Returns Resource data", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
-
-	public Response deleteResourceData(@Context HttpServletRequest request,
-			@PathParam("resourceId") String resourceId) {
-		try {
-
-			Long rID = Long.parseLong(resourceId);
-
-			String resultList = service.deleteResourceData(request, rID);
-			return Response.status(Status.OK).entity(resultList).build();
-		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).build();
-		}
-	}
-
-	@GET
 	@Path("/all")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Find All Media Reource ", notes = "Returns List of Media", response = ResourceData.class, responseContainer = "List")
+	@ApiOperation(value = "Find All Media Resource ", notes = "Returns List of Media", response = ResourceData.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
 
 	public Response getAllResources(@DefaultValue("0") @QueryParam("offset") String offset,
@@ -550,11 +490,11 @@ public class ResourceController {
 	}
 
 	@DELETE
-	@Path("/mediaGallery/delete" + "/{mediaGalleryId}")
+	@Path("/mediaGallery/delete" + "/{mId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Find Media Reource by  ID", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
+	@ApiOperation(value = "Delete MediaGallery by  ID", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
 
 	public Response deleteMedia(@Context HttpServletRequest request,
@@ -570,7 +510,7 @@ public class ResourceController {
 	}
 
 	@PUT
-	@Path("/mediaGallery/update")
+	@Path("/mediaGallery/update/{mID}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -579,10 +519,12 @@ public class ResourceController {
 			@ApiResponse(code = 400, message = "Unable TO update Media Gallery", response = String.class) })
 
 	public Response updateMediaGallery(@Context HttpServletRequest request,
-			@ApiParam(name = "mediaGallery") MediaGallery mediaGallery) {
+			@ApiParam(value = "ID  for Resource", required = true) @PathParam("mediaGalleryId") String mediaGalleryId,
+			@ApiParam(name = "mediaGallery") MediaGalleryShow mediaGallery) {
 		try {
+			Long mId = Long.parseLong(mediaGalleryId);
 
-			MediaGallery updatedMediaGallery = service.updateMediaGalleryByID(request, mediaGallery);
+			MediaGalleryShow updatedMediaGallery = service.updateMediaGalleryByID(request, mId, mediaGallery);
 			return Response.status(Status.OK).entity(updatedMediaGallery).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
