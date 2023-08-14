@@ -432,7 +432,7 @@ public class ResourceController {
 	public Response getMediaGallery(@DefaultValue("0") @QueryParam("offset") String offset,
 			@DefaultValue("12") @QueryParam("limit") String limit, @DefaultValue("all") @QueryParam("type") String type,
 			@DefaultValue("all") @QueryParam("tags") String tags, @DefaultValue("all") @QueryParam("user") String users,
-			@DefaultValue("all") @QueryParam("mIds") String mIds) {
+			@DefaultValue("all") @QueryParam("mId") String mIds) {
 		try {
 
 			Integer max = Integer.parseInt(limit);
