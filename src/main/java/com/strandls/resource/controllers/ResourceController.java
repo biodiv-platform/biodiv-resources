@@ -422,7 +422,7 @@ public class ResourceController {
 	}
 
 	@GET
-	@Path("/mediaGallery/show/{mId}")
+	@Path("/mediaGallery/show")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -432,13 +432,13 @@ public class ResourceController {
 	public Response getMediaGallery(@DefaultValue("0") @QueryParam("offset") String offset,
 			@DefaultValue("12") @QueryParam("limit") String limit, @DefaultValue("all") @QueryParam("type") String type,
 			@DefaultValue("all") @QueryParam("tags") String tags, @DefaultValue("all") @QueryParam("user") String users,
-			@PathParam("mId") String mId) {
+			@DefaultValue("all") @QueryParam("mIds") String mIds) {
 		try {
 
 			Integer max = Integer.parseInt(limit);
 			Integer offSet = Integer.parseInt(offset);
 
-			MediaGalleryShow mediaGallery = service.getMediaByID(mId, max, offSet, type, tags, users);
+			MediaGalleryShow mediaGallery = service.getMediaByID(mIds, max, offSet, type, tags, users);
 
 			return Response.status(Status.OK).entity(mediaGallery).build();
 		} catch (Exception e) {
