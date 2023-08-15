@@ -15,6 +15,7 @@ public class MediaGalleryListTitles {
 	private String description;
 	private String reprImage;
 	private Date lastUpdated;
+	private Long totalMedia;
 
 	/**
 	 * 
@@ -29,15 +30,18 @@ public class MediaGalleryListTitles {
 	 * @param description
 	 * @param reprImage
 	 * @param lastUpdated
+	 * @param totalMedia
 	 */
 
-	public MediaGalleryListTitles(Long id, String name, String description, String reprImage, Date lastUpdated) {
+	public MediaGalleryListTitles(Long id, String name, String description, String reprImage, Date lastUpdated,
+			Long totalMedia) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.reprImage = reprImage;
 		this.lastUpdated = lastUpdated;
+		this.totalMedia = totalMedia;
 	}
 
 	public Long getId() {
@@ -78,6 +82,14 @@ public class MediaGalleryListTitles {
 
 	public void setLastUpdated(Date lastUpdated) {
 		this.lastUpdated = lastUpdated;
+	}
+
+	public Long getTotalMedia() {
+		return totalMedia;
+	}
+
+	public void setTotalMedia(Long totalMedia) {
+		this.totalMedia = totalMedia;
 	}
 
 }
