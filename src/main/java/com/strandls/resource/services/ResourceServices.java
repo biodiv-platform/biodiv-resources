@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
+import com.strandls.resource.pojo.MediaGalleryListPageData;
 import com.strandls.resource.pojo.MediaGalleryResourceMapData;
 import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.Resource;
@@ -78,5 +79,7 @@ public interface ResourceServices {
 	public List<MediaGallery> getAllMediaGallery();
 
 	public String uploadMedia(HttpServletRequest request, List<ResourceWithTags> resourceUpload);
+
+	public MediaGalleryListPageData getMediaGalleryListPageData(Integer max, Integer offSet);
 
 }

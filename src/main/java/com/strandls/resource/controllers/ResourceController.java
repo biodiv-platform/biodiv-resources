@@ -27,6 +27,7 @@ import com.strandls.resource.ApiConstants;
 import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
+import com.strandls.resource.pojo.MediaGalleryListPageData;
 import com.strandls.resource.pojo.MediaGalleryResourceMapData;
 import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.Resource;
@@ -441,6 +442,29 @@ public class ResourceController {
 			MediaGalleryShow mediaGallery = service.getMediaByID(mIds, max, offSet, type, tags, users);
 
 			return Response.status(Status.OK).entity(mediaGallery).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@GET
+	@Path("/mediaGallery/list")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find Media Resource by  ID", notes = "Returns Media Gallery", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
+
+	public Response getMediaGalleryList(@DefaultValue("0") @QueryParam("offset") String offset,
+			@DefaultValue("12") @QueryParam("limit") String limit) {
+		try {
+
+			Integer max = Integer.parseInt(limit);
+			Integer offSet = Integer.parseInt(offset);
+
+			MediaGalleryListPageData mediaGalleryListPageData = service.getMediaGalleryListPageData(max, offSet);
+
+			return Response.status(Status.OK).entity(mediaGalleryListPageData).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}

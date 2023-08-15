@@ -37,4 +37,17 @@ public class MediaGalleryDao extends AbstractDAO<MediaGallery, Long> {
 
 	}
 
+	public Long getTotalMediaGalleryCount() {
+		Session session = sessionFactory.openSession();
+		try {
+			Long count = (Long) session.createQuery("SELECT COUNT(id) FROM MediaGallery").uniqueResult();
+			return count != null ? count : 0L;
+		} catch (Exception e) {
+			logger.error("Error getting total MediaGallery count: {}", e.getMessage());
+			return 0L;
+		} finally {
+			session.close();
+		}
+	}
+
 }
