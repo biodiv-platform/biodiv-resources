@@ -33,6 +33,8 @@ import com.strandls.resource.dao.UFileDao;
 import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
+import com.strandls.resource.pojo.MediaGalleryListPageData;
+import com.strandls.resource.pojo.MediaGalleryListTitles;
 import com.strandls.resource.pojo.MediaGalleryResource;
 import com.strandls.resource.pojo.MediaGalleryResourceMapData;
 import com.strandls.resource.pojo.MediaGalleryShow;
@@ -668,7 +670,6 @@ public class ResourceServicesImpl implements ResourceServices {
 				mediaGallery = mediaGalleryDao.findById(mIdsLong.get(0));
 			}
 		} else {
-
 			mediaGallery.setName("All media gallery");
 			mediaGallery.setDescripition("This is all media Gallery");
 
@@ -780,6 +781,44 @@ public class ResourceServicesImpl implements ResourceServices {
 	@Override
 	public List<MediaGallery> getAllMediaGallery() {
 		return mediaGalleryDao.findAll();
+	}
+
+	@Override
+	public MediaGalleryListPageData getMediaGalleryListPageData(Integer max, Integer offSet) {
+		List<MediaGallery> mediaGalleryList = mediaGalleryDao.findAll(max, offSet);
+		List<MediaGalleryListTitles> mediaGalleryListTitles = new ArrayList<>();
+
+		for (MediaGallery mediaGallery : mediaGalleryList) {
+
+			MediaGalleryListTitles mediaGalleryListItem = new MediaGalleryListTitles();
+
+			mediaGalleryListItem.setId(mediaGallery.getId());
+			mediaGalleryListItem.setName(mediaGallery.getName());
+			mediaGalleryListItem.setDescription(mediaGallery.getDescripition());
+			mediaGalleryListItem.setLastUpdated(mediaGallery.getUpdatedOn());
+			mediaGalleryListItem.setReprImage(getReprImage(mediaGallery.getId()));
+
+			mediaGalleryListTitles.add(mediaGalleryListItem);
+
+		}
+
+		return new MediaGalleryListPageData(mediaGalleryDao.getTotalMediaGalleryCount(), mediaGalleryListTitles);
+	}
+
+	public String getReprImage(Long mId) {
+
+		List<Long> resourcesIds = mediaGalleryResourceDao.findByMediaId(mId);
+
+		List<Resource> resources = resourceDao.findByIds(resourcesIds, -1, -1);
+
+		for (Resource resource : resources) {
+			if (resource.getType() != null && resource.getType().equals("IMAGE")) {
+				return resource.getFileName();
+			}
+		}
+
+		return null;
+
 	}
 
 }
