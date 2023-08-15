@@ -792,13 +792,16 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		for (MediaGallery mediaGallery : mediaGalleryList) {
 
+			List<Long> resourcesIds = mediaGalleryResourceDao.findByMediaId(mediaGallery.getId());
+
 			MediaGalleryListTitles mediaGalleryListItem = new MediaGalleryListTitles();
 
 			mediaGalleryListItem.setId(mediaGallery.getId());
 			mediaGalleryListItem.setName(mediaGallery.getName());
 			mediaGalleryListItem.setDescription(mediaGallery.getDescripition());
 			mediaGalleryListItem.setLastUpdated(mediaGallery.getUpdatedOn());
-			mediaGalleryListItem.setReprImage(getReprImage(mediaGallery.getId()));
+			mediaGalleryListItem.setReprImage(getReprImage(resourcesIds));
+			mediaGalleryListItem.setTotalMedia((long) resourcesIds.size());
 
 			mediaGalleryListTitles.add(mediaGalleryListItem);
 
@@ -807,9 +810,7 @@ public class ResourceServicesImpl implements ResourceServices {
 		return new MediaGalleryListPageData(mediaGalleryDao.getTotalMediaGalleryCount(), mediaGalleryListTitles);
 	}
 
-	public String getReprImage(Long mId) {
-
-		List<Long> resourcesIds = mediaGalleryResourceDao.findByMediaId(mId);
+	public String getReprImage(List<Long> resourcesIds) {
 
 		List<Resource> resources = resourceDao.findByIds(resourcesIds, -1, -1);
 
