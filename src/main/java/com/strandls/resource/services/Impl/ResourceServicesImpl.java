@@ -671,7 +671,7 @@ public class ResourceServicesImpl implements ResourceServices {
 			}
 		} else {
 			mediaGallery.setName("All media gallery");
-			mediaGallery.setDescripition("This is all media Gallery");
+			mediaGallery.setDescription("This is all media Gallery");
 
 		}
 
@@ -741,24 +741,25 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		JSONArray roles = (JSONArray) profile.getAttribute("roles");
 
+		if (!roles.contains("ROLE_ADMIN")) {
+			return null;
+		}
+
 		mediaGallery.setName(mediaGalleryData.getMediaGallery().getName());
-		mediaGallery.setDescripition(mediaGalleryData.getMediaGallery().getDescripition());
+		mediaGallery.setDescription(mediaGalleryData.getMediaGallery().getDescription());
 		mediaGallery.setUpdatedOn(new Date());
+		mediaGalleryDao.update(mediaGallery);
 
 		List<ResourceData> resourceList = mediaGalleryData.getMediaGalleryResource();
 
-		List<Resource> resources = new ArrayList<>();
-		for (ResourceData resourceData : resourceList) {
-			resources.add(resourceData.getResource());
-			TagsMappingData tagsMapping = mediaGalleryHelper.createTagsMappingData(mId, resourceData.getTags());
-			mediaGalleryHelper.updateTagsMapping(request, tagsMapping);
-		}
+		List<Resource> resources = resourceList.stream().map(ResourceData::getResource).collect(Collectors.toList());
 
-		if (!resources.isEmpty()) {
-			updateResource(Constants.MEDIAGALLERY, mId, resources);
-		}
-		if (roles.contains("ROLE_ADMIN")) {
-			mediaGalleryDao.update(mediaGallery);
+		updateResource(Constants.MEDIAGALLERY, mId, resources);
+
+		for (ResourceData resourceData : resourceList) {
+			TagsMappingData tagsMapping = mediaGalleryHelper.createTagsMappingData(resourceData.getResource().getId(),
+					resourceData.getTags());
+			mediaGalleryHelper.updateTagsMapping(request, tagsMapping);
 		}
 
 		return getMediaByID(mId);
@@ -809,7 +810,7 @@ public class ResourceServicesImpl implements ResourceServices {
 
 			mediaGalleryListItem.setId(mediaGallery.getId());
 			mediaGalleryListItem.setName(mediaGallery.getName());
-			mediaGalleryListItem.setDescription(mediaGallery.getDescripition());
+			mediaGalleryListItem.setDescription(mediaGallery.getDescription());
 			mediaGalleryListItem.setLastUpdated(mediaGallery.getUpdatedOn());
 			mediaGalleryListItem.setReprImage(getReprImage(resourcesIds));
 			mediaGalleryListItem.setTotalMedia((long) resourcesIds.size());

@@ -26,7 +26,7 @@ public class MediaGallery implements Serializable {
 	private Long id;
 
 	private String name;
-	private String descripition;
+	private String description;
 	private Long authorId;
 	private Boolean isDeleted;
 	private Date createdOn;
@@ -44,12 +44,12 @@ public class MediaGallery implements Serializable {
 	}
 
 	@Column(name = "description")
-	public String getDescripition() {
-		return descripition;
+	public String getDescription() {
+		return description;
 	}
 
-	public void setDescripition(String descripition) {
-		this.descripition = descripition;
+	public void setDescription(String descripition) {
+		this.description = descripition;
 	}
 
 	@Column(name = "author_id")

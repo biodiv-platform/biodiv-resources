@@ -537,7 +537,7 @@ public class ResourceController {
 
 	@PUT
 	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.UPDATE + "/{mId}")
-	@Consumes(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ValidateUser
