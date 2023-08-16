@@ -61,7 +61,7 @@ public class MediaGalleryHelper {
 			mediaGallery.setCreatedOn(new Date());
 			mediaGallery.setUpdatedOn(new Date());
 			mediaGallery.setName(mediaGalleryCreate.getName());
-			mediaGallery.setDescripition(mediaGalleryCreate.getDescription());
+			mediaGallery.setDescription(mediaGalleryCreate.getDescription());
 
 			return mediaGallery;
 
