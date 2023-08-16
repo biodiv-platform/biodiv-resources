@@ -711,6 +711,14 @@ public class ResourceServicesImpl implements ResourceServices {
 	@Override
 	public String deleteMediaByID(HttpServletRequest request, Long mId) {
 		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+
+			if (!roles.contains("ROLE_ADMIN")) {
+				return null;
+			}
 			MediaGallery mediaGallerry = mediaGalleryDao.findById(mId);
 
 			List<Resource> resources = new ArrayList<>();
@@ -731,6 +739,10 @@ public class ResourceServicesImpl implements ResourceServices {
 			MediaGalleryShow mediaGalleryData) {
 		MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
 
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+
+		JSONArray roles = (JSONArray) profile.getAttribute("roles");
+
 		mediaGallery.setName(mediaGalleryData.getMediaGallery().getName());
 		mediaGallery.setDescripition(mediaGalleryData.getMediaGallery().getDescripition());
 		mediaGallery.setUpdatedOn(new Date());
@@ -747,8 +759,9 @@ public class ResourceServicesImpl implements ResourceServices {
 		if (!resources.isEmpty()) {
 			updateResource(Constants.MEDIAGALLERY, mId, resources);
 		}
-
-		mediaGalleryDao.update(mediaGallery);
+		if (roles.contains("ROLE_ADMIN")) {
+			mediaGalleryDao.update(mediaGallery);
+		}
 
 		return getMediaByID(mId);
 	}
@@ -792,16 +805,14 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		for (MediaGallery mediaGallery : mediaGalleryList) {
 
-			List<Long> resourcesIds = mediaGalleryResourceDao.findByMediaId(mediaGallery.getId());
-
 			MediaGalleryListTitles mediaGalleryListItem = new MediaGalleryListTitles();
 
 			mediaGalleryListItem.setId(mediaGallery.getId());
 			mediaGalleryListItem.setName(mediaGallery.getName());
 			mediaGalleryListItem.setDescription(mediaGallery.getDescripition());
 			mediaGalleryListItem.setLastUpdated(mediaGallery.getUpdatedOn());
-			mediaGalleryListItem.setReprImage(getReprImage(resourcesIds));
-			mediaGalleryListItem.setTotalMedia((long) resourcesIds.size());
+			mediaGalleryListItem.setReprImage(getReprImage(mediaGallery.getId()));
+			mediaGalleryListItem.setTotalMedia(mediaGalleryDao.getTotalMediaGalleryCount());
 
 			mediaGalleryListTitles.add(mediaGalleryListItem);
 
@@ -810,7 +821,9 @@ public class ResourceServicesImpl implements ResourceServices {
 		return new MediaGalleryListPageData(mediaGalleryDao.getTotalMediaGalleryCount(), mediaGalleryListTitles);
 	}
 
-	public String getReprImage(List<Long> resourcesIds) {
+	public String getReprImage(Long mId) {
+
+		List<Long> resourcesIds = mediaGalleryResourceDao.findByMediaId(mId);
 
 		List<Resource> resources = resourceDao.findByIds(resourcesIds, -1, -1);
 

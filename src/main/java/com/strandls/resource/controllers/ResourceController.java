@@ -360,7 +360,7 @@ public class ResourceController {
 	}
 
 	@GET
-	@Path("/mediaGallery/editPage" + "/{mId}")
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.EDITPAGE + "{mId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -379,7 +379,7 @@ public class ResourceController {
 	}
 
 	@POST
-	@Path("/mediaGallery" + ApiConstants.CREATE)
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.CREATE)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -401,7 +401,7 @@ public class ResourceController {
 	}
 
 	@POST
-	@Path("/mediaGallery/upload")
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.UPLOAD)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -423,7 +423,7 @@ public class ResourceController {
 	}
 
 	@GET
-	@Path("/mediaGallery/show")
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.SHOW)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -448,7 +448,7 @@ public class ResourceController {
 	}
 
 	@GET
-	@Path("/mediaGallery/list")
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.LIST)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -471,7 +471,7 @@ public class ResourceController {
 	}
 
 	@GET
-	@Path("/mediaGallery/all")
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.ALL)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -489,7 +489,7 @@ public class ResourceController {
 	}
 
 	@GET
-	@Path("/all")
+	@Path(ApiConstants.ALL)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -514,15 +514,17 @@ public class ResourceController {
 	}
 
 	@DELETE
-	@Path("/mediaGallery/delete" + "/{mId}")
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.DELETE + "{mId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
 
 	@ApiOperation(value = "Delete MediaGallery by  ID", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
 
 	public Response deleteMedia(@Context HttpServletRequest request,
-			@ApiParam(value = "ID  for Resource", required = true) @PathParam("mediaGalleryId") String mediaGalleryId) {
+			@ApiParam(value = "ID  for Resource", required = true) @PathParam("mId") String mediaGalleryId) {
 		try {
 
 			Long mId = Long.parseLong(mediaGalleryId);
@@ -534,16 +536,18 @@ public class ResourceController {
 	}
 
 	@PUT
-	@Path("/mediaGallery/update/{mID}")
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.UPDATE + "{mId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
 
 	@ApiOperation(value = "Update Media Gallery", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
 	@ApiResponses(value = {
 			@ApiResponse(code = 400, message = "Unable TO update Media Gallery", response = String.class) })
 
 	public Response updateMediaGallery(@Context HttpServletRequest request,
-			@ApiParam(value = "ID  for Resource", required = true) @PathParam("mediaGalleryId") String mediaGalleryId,
+			@ApiParam(value = "ID  for Resource", required = true) @PathParam("mId") String mediaGalleryId,
 			@ApiParam(name = "mediaGallery") MediaGalleryShow mediaGallery) {
 		try {
 			Long mId = Long.parseLong(mediaGalleryId);
@@ -556,9 +560,11 @@ public class ResourceController {
 	}
 
 	@PUT
-	@Path("/mediaGallery/bulkResourceMapping")
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.BULKRESOURCEMAPPING)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
 
 	@ApiOperation(value = "Update Media Galleries", notes = "Returns Media Galleries", response = MediaGallery.class, responseContainer = "List")
 	@ApiResponses(value = {
