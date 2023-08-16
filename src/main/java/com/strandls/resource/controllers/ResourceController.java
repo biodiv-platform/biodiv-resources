@@ -360,7 +360,7 @@ public class ResourceController {
 	}
 
 	@GET
-	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.EDITPAGE + "{mId}")
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.EDITPAGE + "/{mId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -514,7 +514,7 @@ public class ResourceController {
 	}
 
 	@DELETE
-	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.DELETE + "{mId}")
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.DELETE + "/{mId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
@@ -536,7 +536,7 @@ public class ResourceController {
 	}
 
 	@PUT
-	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.UPDATE + "{mId}")
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.UPDATE + "/{mId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
