@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +25,7 @@ import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
 import com.strandls.resource.pojo.MediaGalleryResource;
 import com.strandls.resource.pojo.Resource;
+import com.strandls.resource.pojo.ResourceData;
 import com.strandls.resource.pojo.ResourceWithTags;
 import com.strandls.utility.controller.UtilityServiceApi;
 import com.strandls.utility.pojo.Tags;
@@ -195,6 +197,17 @@ public class MediaGalleryHelper {
 		}
 
 		return Collections.emptyList();
+	}
+
+	public List<ResourceWithTags> getResourcesWithTags(List<ResourceData> resourceDataList) {
+		return resourceDataList.stream().filter(resourceData -> resourceData.getResource().getId() == null)
+				.map(resourceData -> {
+					Resource resource = resourceData.getResource();
+					return new ResourceWithTags(resource.getFileName(), resource.getUrl(), resource.getType(),
+							resource.getDescription(), resource.getRating(), resource.getLicenseId(),
+							resource.getContext(), resource.getLanguageId(), resource.getContributor(),
+							resourceData.getTags(), null);
+				}).collect(Collectors.toList());
 	}
 
 	public TagsMappingData createTagsMappingData(Long objectId, List<Tags> tags) {
