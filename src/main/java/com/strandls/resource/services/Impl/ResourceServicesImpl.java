@@ -743,6 +743,8 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		JSONArray roles = (JSONArray) profile.getAttribute("roles");
 
+		Long userId = Long.parseLong(profile.getId());
+
 		if (!roles.contains("ROLE_ADMIN")) {
 			return null;
 		}
@@ -754,9 +756,16 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		List<ResourceData> resourceList = mediaGalleryData.getMediaGalleryResource();
 
-		List<Resource> resources = resourceList.stream().map(ResourceData::getResource).collect(Collectors.toList());
+		// existing resource
+		List<Resource> resourcesWithId = resourceList.stream().map(ResourceData::getResource)
+				.filter(resource -> resource.getId() != null).collect(Collectors.toList());
 
-		updateResource(Constants.MEDIAGALLERY, mId, resources);
+		updateResource(Constants.MEDIAGALLERY, mId, resourcesWithId);
+
+		// new resource
+		List<ResourceWithTags> resourcesWithTags = mediaGalleryHelper.getResourcesWithTags(resourceList);
+
+		mediaGalleryHelper.createResourceMapping(request, userId, resourcesWithTags, mediaGallery.getId());
 
 		for (ResourceData resourceData : resourceList) {
 			TagsMappingData tagsMapping = mediaGalleryHelper.createTagsMappingData(resourceData.getResource().getId(),
