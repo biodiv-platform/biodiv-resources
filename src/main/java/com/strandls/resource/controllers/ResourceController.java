@@ -548,7 +548,7 @@ public class ResourceController {
 
 	public Response updateMediaGallery(@Context HttpServletRequest request,
 			@ApiParam(value = "ID  for Resource", required = true) @PathParam("mId") String mediaGalleryId,
-			@ApiParam(name = "mediaGallery") MediaGalleryShow mediaGallery) {
+			@ApiParam(name = "mediaGallery") MediaGalleryCreate mediaGallery) {
 		try {
 			Long mId = Long.parseLong(mediaGalleryId);
 

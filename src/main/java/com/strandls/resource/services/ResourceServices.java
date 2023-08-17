@@ -71,7 +71,7 @@ public interface ResourceServices {
 			String users);
 
 	public MediaGalleryShow updateMediaGalleryByID(HttpServletRequest request, Long mediaGalleryId,
-			MediaGalleryShow mediaGallery);
+			MediaGalleryCreate mediaGallery);
 
 	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request,
 			MediaGalleryResourceMapData mediaGalleryResourceMapData);
