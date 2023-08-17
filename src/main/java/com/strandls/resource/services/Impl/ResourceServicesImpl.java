@@ -736,8 +736,7 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	@Override
 	public MediaGalleryShow updateMediaGalleryByID(HttpServletRequest request, Long mId,
-			MediaGalleryShow mediaGalleryData) {
-		MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
+			MediaGalleryCreate mediaGalleryData) {
 
 		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 
@@ -749,29 +748,34 @@ public class ResourceServicesImpl implements ResourceServices {
 			return null;
 		}
 
-		mediaGallery.setName(mediaGalleryData.getMediaGallery().getName());
-		mediaGallery.setDescription(mediaGalleryData.getMediaGallery().getDescription());
+		MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
+
+		mediaGallery.setName(mediaGalleryData.getName());
+		mediaGallery.setDescription(mediaGalleryData.getDescription());
 		mediaGallery.setUpdatedOn(new Date());
 		mediaGalleryDao.update(mediaGallery);
 
-		List<ResourceData> resourceList = mediaGalleryData.getMediaGalleryResource();
+		List<ResourceWithTags> resourceWithTags = mediaGalleryData.getResourcesList();
 
 		// existing resource
-		List<Resource> resourcesWithId = resourceList.stream().map(ResourceData::getResource)
-				.filter(resource -> resource.getId() != null).collect(Collectors.toList());
+		List<ResourceWithTags> resourcesWithId = resourceWithTags.stream().filter(rwt -> rwt.getId() != null)
+				.collect(Collectors.toList());
 
-		updateResource(Constants.MEDIAGALLERY, mId, resourcesWithId);
+		List<Resource> oldResource = mediaGalleryHelper.convertResourceWithTagsList(resourcesWithId);
+		updateResource(Constants.MEDIAGALLERY, mId, oldResource);
+
+		for (ResourceWithTags resource : resourcesWithId) {
+			TagsMappingData tagsMapping = mediaGalleryHelper.createTagsMappingData(resource.getId(),
+					resource.getTags());
+			mediaGalleryHelper.updateTagsMapping(request, tagsMapping);
+
+		}
 
 		// new resource
-		List<ResourceWithTags> resourcesWithTags = mediaGalleryHelper.getResourcesWithTags(resourceList);
+		List<ResourceWithTags> newResource = resourceWithTags.stream().filter(rwt -> rwt.getId() == null)
+				.collect(Collectors.toList());
 
-		mediaGalleryHelper.createResourceMapping(request, userId, resourcesWithTags, mediaGallery.getId());
-
-		for (ResourceData resourceData : resourceList) {
-			TagsMappingData tagsMapping = mediaGalleryHelper.createTagsMappingData(resourceData.getResource().getId(),
-					resourceData.getTags());
-			mediaGalleryHelper.updateTagsMapping(request, tagsMapping);
-		}
+		mediaGalleryHelper.createResourceMapping(request, userId, newResource, mediaGallery.getId());
 
 		return getMediaByID(mId);
 	}

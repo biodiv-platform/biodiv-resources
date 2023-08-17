@@ -199,15 +199,21 @@ public class MediaGalleryHelper {
 		return Collections.emptyList();
 	}
 
-	public List<ResourceWithTags> getResourcesWithTags(List<ResourceData> resourceDataList) {
-		return resourceDataList.stream().filter(resourceData -> resourceData.getResource().getId() == null)
-				.map(resourceData -> {
-					Resource resource = resourceData.getResource();
-					return new ResourceWithTags(resource.getFileName(), resource.getUrl(), resource.getType(),
-							resource.getDescription(), resource.getRating(), resource.getLicenseId(),
-							resource.getContext(), resource.getLanguageId(), resource.getContributor(),
-							resourceData.getTags(), null);
-				}).collect(Collectors.toList());
+	public List<Resource> convertResourceWithTagsList(List<ResourceWithTags> resourceWithTagsList) {
+		return resourceWithTagsList.stream().map(resourceWithTags -> {
+			Resource resource = new Resource();
+			resource.setId(resourceWithTags.getId());
+			resource.setDescription(resourceWithTags.getCaption());
+			resource.setFileName(resourceWithTags.getPath());
+			resource.setType(resourceWithTags.getType());
+			resource.setUrl(resourceWithTags.getUrl());
+			resource.setRating(resourceWithTags.getRating());
+			resource.setContext(resourceWithTags.getContext());
+			resource.setLanguageId(resourceWithTags.getLanguageId());
+			resource.setLicenseId(resourceWithTags.getLicenseId());
+			resource.setContributor(resourceWithTags.getContributor());
+			return resource;
+		}).collect(Collectors.toList());
 	}
 
 	public TagsMappingData createTagsMappingData(Long objectId, List<Tags> tags) {

@@ -9,6 +9,7 @@ import com.strandls.utility.pojo.Tags;
 
 public class ResourceWithTags {
 
+	private Long id;
 	private String path;
 	private String url;
 	private String type;
@@ -30,6 +31,7 @@ public class ResourceWithTags {
 	}
 
 	/**
+	 * @param id
 	 * @param path
 	 * @param url
 	 * @param type
@@ -41,9 +43,10 @@ public class ResourceWithTags {
 	 * @param tags
 	 * @param mId
 	 */
-	public ResourceWithTags(String path, String url, String type, String caption, Integer rating, Long licenseId,
-			String context, Long languageId, String contributor, List<Tags> tags, List<Long> mId) {
+	public ResourceWithTags(Long id, String path, String url, String type, String caption, Integer rating,
+			Long licenseId, String context, Long languageId, String contributor, List<Tags> tags, List<Long> mId) {
 		super();
+		this.id = id;
 		this.path = path;
 		this.url = url;
 		this.type = type;
@@ -55,6 +58,14 @@ public class ResourceWithTags {
 		this.contributor = contributor;
 		this.tags = tags;
 		this.mId = mId;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getPath() {
