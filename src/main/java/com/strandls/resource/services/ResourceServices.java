@@ -82,4 +82,8 @@ public interface ResourceServices {
 
 	public MediaGalleryListPageData getMediaGalleryListPageData(Integer max, Integer offSet);
 
+	public Resource updateResourceByID(HttpServletRequest request, ResourceWithTags resourceWithTags);
+
+	public String deleteResourceByID(HttpServletRequest request, Long rId);
+
 }

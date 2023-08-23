@@ -43,7 +43,7 @@ public class MediaGallery implements Serializable {
 		this.id = id;
 	}
 
-	@Column(name = "description")
+	@Column(name = "description", columnDefinition = "TEXT")
 	public String getDescription() {
 		return description;
 	}

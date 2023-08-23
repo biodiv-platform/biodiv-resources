@@ -581,4 +581,48 @@ public class ResourceController {
 		}
 	}
 
+	@PUT
+	@Path(ApiConstants.UPDATE)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Update Resource", notes = "Returns Resource", response = ResourceWithTags.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable To update Resource", response = String.class) })
+
+	public Response updateResource(@Context HttpServletRequest request,
+			@ApiParam(name = "resourceWithTags") ResourceWithTags resourceWithTags) {
+		try {
+
+			Resource updatedMediaGallery = service.updateResourceByID(request, resourceWithTags);
+
+			return Response.status(Status.OK).entity(updatedMediaGallery).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@DELETE
+	@Path(ApiConstants.DELETE + "/{rId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Delete resource by  ID", notes = "Returns Media", response = Resource.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
+
+	public Response deleteResource(@Context HttpServletRequest request,
+			@ApiParam(value = "ID  for Resource", required = true) @PathParam("rId") String resourceId) {
+		try {
+
+			Long rId = Long.parseLong(resourceId);
+			String result = service.deleteResourceByID(request, rId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
 }

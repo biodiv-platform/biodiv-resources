@@ -103,4 +103,21 @@ public class MediaGalleryResourceDao extends AbstractDAO<MediaGalleryResource, L
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<MediaGalleryResource> findByResourceId(Long resourceId) {
+		String qry = "from MediaGalleryResource where resourceId = :resourceId";
+		Session session = sessionFactory.openSession();
+		List<MediaGalleryResource> results = new ArrayList<>();
+		try {
+			Query<MediaGalleryResource> query = session.createQuery(qry);
+			query.setParameter("resourceId", resourceId);
+			results = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return results;
+	}
+
 }
