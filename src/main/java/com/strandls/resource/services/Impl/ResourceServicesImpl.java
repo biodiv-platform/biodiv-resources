@@ -633,6 +633,7 @@ public class ResourceServicesImpl implements ResourceServices {
 			try {
 				resourceData.setUserIbp(userService.getUserIbp(item.getUploaderId().toString()));
 				resourceData.setTags(utilityServiceApi.getTags("resource", item.getId().toString()));
+				resourceData.setLicense(licenseService.getLicenseById(item.getLicenseId()));
 
 			} catch (Exception e) {
 				logger.error(e.getMessage());
@@ -849,6 +850,52 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		return null;
 
+	}
+
+	@Override
+	public Resource updateResourceByID(HttpServletRequest request, ResourceWithTags resourceWithTags) {
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+		JSONArray roles = (JSONArray) profile.getAttribute("roles");
+		Long userId = Long.parseLong(profile.getId());
+
+		Resource resource = resourceDao.findById(resourceWithTags.getId());
+
+		if (roles.contains("ROLE_ADMIN") || resource.getUploaderId().equals(userId)) {
+			resource.setDescription(resourceWithTags.getCaption());
+			resource.setContributor(resourceWithTags.getContributor());
+			resource.setRating(resourceWithTags.getRating());
+			resource.setLicenseId(resourceWithTags.getLicenseId());
+			resourceDao.update(resource);
+
+		}
+
+		TagsMappingData tagsMapping = mediaGalleryHelper.createTagsMappingData(resourceWithTags.getId(),
+				resourceWithTags.getTags());
+		mediaGalleryHelper.updateTagsMapping(request, tagsMapping);
+
+		return resource;
+	}
+
+	@Override
+	public String deleteResourceByID(HttpServletRequest request, Long rId) {
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+		JSONArray roles = (JSONArray) profile.getAttribute("roles");
+		Long userId = Long.parseLong(profile.getId());
+
+		Resource resource = resourceDao.findById(rId);
+
+		if (roles.contains("ROLE_ADMIN") || resource.getUploaderId().equals(userId)) {
+			List<MediaGalleryResource> mediaGalleryResource = mediaGalleryResourceDao.findByResourceId(rId);
+			for (MediaGalleryResource item : mediaGalleryResource) {
+				mediaGalleryResourceDao.delete(item);
+			}
+			resourceDao.delete(resource);
+
+			return "Resource Deleted Sucessfully";
+
+		}
+
+		return null;
 	}
 
 }

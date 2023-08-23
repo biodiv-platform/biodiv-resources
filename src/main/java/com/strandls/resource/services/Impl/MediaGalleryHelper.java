@@ -25,7 +25,6 @@ import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
 import com.strandls.resource.pojo.MediaGalleryResource;
 import com.strandls.resource.pojo.Resource;
-import com.strandls.resource.pojo.ResourceData;
 import com.strandls.resource.pojo.ResourceWithTags;
 import com.strandls.utility.controller.UtilityServiceApi;
 import com.strandls.utility.pojo.Tags;
