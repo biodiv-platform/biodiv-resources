@@ -86,4 +86,6 @@ public interface ResourceServices {
 
 	public String deleteResourceByID(HttpServletRequest request, Long rId);
 
+	public ResourceData getResourceByID(Long rID);
+
 }

@@ -896,4 +896,25 @@ public class ResourceServicesImpl implements ResourceServices {
 		return null;
 	}
 
+	@Override
+	public ResourceData getResourceByID(Long rID) {
+		ResourceData resourceData = new ResourceData();
+		Resource resource = resourceDao.findById(rID);
+		if (resource == null) {
+			return null;
+		}
+		try {
+			resourceData.setResource(resource);
+			resourceData.setUserIbp(userService.getUserIbp(resource.getUploaderId().toString()));
+			resourceData.setTags(utilityServiceApi.getTags("resource", resource.getId().toString()));
+			resourceData.setLicense(licenseService.getLicenseById(resource.getLicenseId()));
+
+			return resourceData;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return null;
+	}
+
 }
