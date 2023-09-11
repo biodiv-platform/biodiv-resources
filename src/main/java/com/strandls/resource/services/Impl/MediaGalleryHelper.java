@@ -141,7 +141,7 @@ public class MediaGalleryHelper {
 
 				resource.setUrl(resourceData.getUrl());
 				resource.setRating(resourceData.getRating());
-//				resource.setUploadTime(new Date());
+				resource.setUploadTime(new java.sql.Date(new Date().getTime()));
 				resource.setUploaderId(userId);
 				resource.setContext("RESOURCE");
 
