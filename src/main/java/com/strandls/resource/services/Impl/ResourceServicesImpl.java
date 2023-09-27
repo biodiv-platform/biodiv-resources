@@ -115,6 +115,12 @@ public class ResourceServicesImpl implements ResourceServices {
 	@Inject
 	private MediaGalleryResourceDao mediaGalleryResourceDao;
 
+	private static final String ROLES = "roles";
+
+	private static final String ROLE_ADMIN = "ROLE_ADMIN";
+
+	private static final String RESOURCE = "resource";
+
 	@Override
 	public List<ResourceData> getResouceURL(String objectType, Long objectId) {
 		List<ResourceData> observationResourceUsers = new ArrayList<ResourceData>();
@@ -539,9 +545,9 @@ public class ResourceServicesImpl implements ResourceServices {
 	public MediaGalleryShow createMedia(HttpServletRequest request, MediaGalleryCreate mediaGalleryCreate) {
 		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 
-		JSONArray roles = (JSONArray) profile.getAttribute("roles");
+		JSONArray roles = (JSONArray) profile.getAttribute(ROLES);
 
-		if (!roles.contains("ROLE_ADMIN")) {
+		if (!roles.contains(ROLE_ADMIN)) {
 			return null;
 		}
 
@@ -630,7 +636,7 @@ public class ResourceServicesImpl implements ResourceServices {
 			ResourceData resourceData = new ResourceData();
 			try {
 				resourceData.setUserIbp(userService.getUserIbp(item.getUploaderId().toString()));
-				resourceData.setTags(utilityServiceApi.getTags("resource", item.getId().toString()));
+				resourceData.setTags(utilityServiceApi.getTags(RESOURCE, item.getId().toString()));
 				resourceData.setLicense(licenseService.getLicenseById(item.getLicenseId()));
 
 			} catch (Exception e) {
@@ -687,7 +693,7 @@ public class ResourceServicesImpl implements ResourceServices {
 		if (tags != null && !tags.isEmpty() && !tags.equals("all")) {
 			try {
 
-				tagResourcesId = utilityServiceApi.getResourceIds(tags, "resource", "all");
+				tagResourcesId = utilityServiceApi.getResourceIds(tags, RESOURCE, "all");
 
 				commonResourcesId = filteredIds.stream().filter(tagResourcesId::contains).collect(Collectors.toList());
 
@@ -713,9 +719,9 @@ public class ResourceServicesImpl implements ResourceServices {
 
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 
-			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			JSONArray roles = (JSONArray) profile.getAttribute(ROLES);
 
-			if (!roles.contains("ROLE_ADMIN")) {
+			if (!roles.contains(ROLE_ADMIN)) {
 				return null;
 			}
 			MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
@@ -739,11 +745,11 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 
-		JSONArray roles = (JSONArray) profile.getAttribute("roles");
+		JSONArray roles = (JSONArray) profile.getAttribute(ROLES);
 
 		Long userId = Long.parseLong(profile.getId());
 
-		if (!roles.contains("ROLE_ADMIN")) {
+		if (!roles.contains(ROLE_ADMIN)) {
 			return null;
 		}
 
@@ -853,12 +859,12 @@ public class ResourceServicesImpl implements ResourceServices {
 	@Override
 	public Resource updateResourceByID(HttpServletRequest request, ResourceWithTags resourceWithTags) {
 		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-		JSONArray roles = (JSONArray) profile.getAttribute("roles");
+		JSONArray roles = (JSONArray) profile.getAttribute(ROLES);
 		Long userId = Long.parseLong(profile.getId());
 
 		Resource resource = resourceDao.findById(resourceWithTags.getId());
 
-		if (roles.contains("ROLE_ADMIN") || resource.getUploaderId().equals(userId)) {
+		if (roles.contains(ROLE_ADMIN) || resource.getUploaderId().equals(userId)) {
 			resource.setDescription(resourceWithTags.getCaption());
 			resource.setContributor(resourceWithTags.getContributor());
 			resource.setRating(resourceWithTags.getRating());
@@ -879,11 +885,11 @@ public class ResourceServicesImpl implements ResourceServices {
 		try {
 
 			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			JSONArray roles = (JSONArray) profile.getAttribute(ROLES);
 			Long userId = Long.parseLong(profile.getId());
 			Resource resource = resourceDao.findById(rId);
 
-			if (roles.contains("ROLE_ADMIN") || resource.getUploaderId().equals(userId)) {
+			if (roles.contains(ROLE_ADMIN) || resource.getUploaderId().equals(userId)) {
 				List<MediaGalleryResource> mediaGalleryResource = mediaGalleryResourceDao.findByResourceId(rId);
 				for (MediaGalleryResource item : mediaGalleryResource) {
 					mediaGalleryResourceDao.delete(item);
@@ -901,7 +907,7 @@ public class ResourceServicesImpl implements ResourceServices {
 	}
 
 	@Override
-	public ResourceData getResourceByID(Long rID) {
+	public ResourceData getResourceDataByID(Long rID) {
 		ResourceData resourceData = new ResourceData();
 		Resource resource = resourceDao.findById(rID);
 		if (resource == null) {
@@ -910,7 +916,7 @@ public class ResourceServicesImpl implements ResourceServices {
 		try {
 			resourceData.setResource(resource);
 			resourceData.setUserIbp(userService.getUserIbp(resource.getUploaderId().toString()));
-			resourceData.setTags(utilityServiceApi.getTags("resource", resource.getId().toString()));
+			resourceData.setTags(utilityServiceApi.getTags(RESOURCE, resource.getId().toString()));
 			resourceData.setLicense(licenseService.getLicenseById(resource.getLicenseId()));
 
 			return resourceData;
