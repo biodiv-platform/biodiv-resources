@@ -584,7 +584,6 @@ public class ResourceServicesImpl implements ResourceServices {
 	@Override
 	public ResourceListData getAllResources(Integer limit, Integer offset, String contexts, String mediaTypes,
 			String tags, String users) {
-		List<Long> tagResourcesId = new ArrayList<>();
 
 		List<String> mediaTypeList = Arrays.asList(mediaTypes.split(","));
 		List<String> contextList = Arrays.asList(contexts.split(","));
@@ -603,9 +602,8 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		if (tags != null && !tags.isEmpty() && !tags.equals("all")) {
 			try {
-				for (String context : contextList) {
-					tagResourcesId = utilityServiceApi.getResourceIds(tags, context.toLowerCase(), "all");
-				}
+
+				List<Long> tagResourcesId = utilityServiceApi.getResourceIds(tags, contexts.toLowerCase(), "all");
 
 				commonResourcesId = resourcesId.stream().filter(tagResourcesId::contains).collect(Collectors.toList());
 
@@ -718,12 +716,12 @@ public class ResourceServicesImpl implements ResourceServices {
 			if (!roles.contains("ROLE_ADMIN")) {
 				return null;
 			}
-			MediaGallery mediaGallerry = mediaGalleryDao.findById(mId);
+			MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
 
 			List<Resource> resources = new ArrayList<>();
 			updateResource(Constants.MEDIAGALLERY, mId, resources);
 
-			mediaGalleryDao.delete(mediaGallerry);
+			mediaGalleryDao.delete(mediaGallery);
 
 			return "Media Gallery Deleted Sucessfully";
 
@@ -876,24 +874,28 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	@Override
 	public String deleteResourceByID(HttpServletRequest request, Long rId) {
-		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
-		JSONArray roles = (JSONArray) profile.getAttribute("roles");
-		Long userId = Long.parseLong(profile.getId());
+		try {
 
-		Resource resource = resourceDao.findById(rId);
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute("roles");
+			Long userId = Long.parseLong(profile.getId());
+			Resource resource = resourceDao.findById(rId);
 
-		if (roles.contains("ROLE_ADMIN") || resource.getUploaderId().equals(userId)) {
-			List<MediaGalleryResource> mediaGalleryResource = mediaGalleryResourceDao.findByResourceId(rId);
-			for (MediaGalleryResource item : mediaGalleryResource) {
-				mediaGalleryResourceDao.delete(item);
+			if (roles.contains("ROLE_ADMIN") || resource.getUploaderId().equals(userId)) {
+				List<MediaGalleryResource> mediaGalleryResource = mediaGalleryResourceDao.findByResourceId(rId);
+				for (MediaGalleryResource item : mediaGalleryResource) {
+					mediaGalleryResourceDao.delete(item);
+				}
+				resourceDao.delete(resource);
+
+				return "Resource Deleted Sucessfully";
+
 			}
-			resourceDao.delete(resource);
-
-			return "Resource Deleted Sucessfully";
-
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
-
 		return null;
+
 	}
 
 	@Override
