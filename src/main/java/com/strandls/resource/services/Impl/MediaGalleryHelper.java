@@ -55,6 +55,8 @@ public class MediaGalleryHelper {
 	private Long defaultLicenseId = Long
 			.parseLong(PropertyFileUtil.fetchProperty("config.properties", "defaultLicenseId"));
 
+	private static final String RESOURCE = "resource";
+
 	public MediaGallery createMediaGalleryMapping(Long userId, MediaGalleryCreate mediaGalleryCreate) {
 		try {
 			MediaGallery mediaGallery = new MediaGallery();
@@ -97,7 +99,7 @@ public class MediaGalleryHelper {
 				FilesDTO filesDTO = new FilesDTO();
 				filesDTO.setFiles(fileList);
 				filesDTO.setFolder("resources");
-				filesDTO.setModule("resource");
+				filesDTO.setModule(RESOURCE);
 				fileMap = fileUploadService.moveFiles(filesDTO);
 			}
 
@@ -112,7 +114,7 @@ public class MediaGalleryHelper {
 				if (resourceData.getPath() != null) {
 					if (fileMap != null && !fileMap.isEmpty() && fileMap.containsKey(resourceData.getPath())) {
 						Map<String, String> files = (Map<String, String>) fileMap.get(resourceData.getPath());
-						String relativePath = files.get("name").toString();
+						String relativePath = files.get("name");
 						resource.setFileName(relativePath);
 					} else if (resourceData.getPath().startsWith("/ibpmu")) {
 						continue;
@@ -229,7 +231,7 @@ public class MediaGalleryHelper {
 
 		utilityServices = headers.addUtilityHeaders(utilityServices, request.getHeader(HttpHeaders.AUTHORIZATION));
 		try {
-			utilityServices.createTags("resource", tagsMappingData);
+			utilityServices.createTags(RESOURCE, tagsMappingData);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
@@ -240,7 +242,7 @@ public class MediaGalleryHelper {
 
 		utilityServices = headers.addUtilityHeaders(utilityServices, request.getHeader(HttpHeaders.AUTHORIZATION));
 		try {
-			utilityServices.updateTags("resource", tagsMappingData);
+			utilityServices.updateTags(RESOURCE, tagsMappingData);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}

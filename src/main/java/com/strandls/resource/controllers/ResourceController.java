@@ -594,7 +594,7 @@ public class ResourceController {
 		try {
 
 			Long rID = Long.parseLong(resourceId);
-			ResourceData mediaGallery = service.getResourceByID(rID);
+			ResourceData mediaGallery = service.getResourceDataByID(rID);
 			return Response.status(Status.OK).entity(mediaGallery).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
