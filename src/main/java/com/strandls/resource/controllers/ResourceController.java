@@ -25,10 +25,17 @@ import javax.ws.rs.core.Response.Status;
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.resource.ApiConstants;
 import com.strandls.resource.pojo.License;
+import com.strandls.resource.pojo.MediaGallery;
+import com.strandls.resource.pojo.MediaGalleryCreate;
+import com.strandls.resource.pojo.MediaGalleryListPageData;
+import com.strandls.resource.pojo.MediaGalleryResourceMapData;
+import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
+import com.strandls.resource.pojo.ResourceListData;
 import com.strandls.resource.pojo.ResourceRating;
+import com.strandls.resource.pojo.ResourceWithTags;
 import com.strandls.resource.pojo.SpeciesPull;
 import com.strandls.resource.pojo.SpeciesResourcePulling;
 import com.strandls.resource.pojo.UFile;
@@ -342,12 +349,299 @@ public class ResourceController {
 	@ApiOperation(value = "update crop details of resources", notes = "returns updated crop information", response = ResourceCropInfo.class)
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
 
-	public Response updateResourcesCropInfo(@Context HttpServletRequest request,@ApiParam(name = "resourcesCropInfo") ResourceCropInfo resourceCropInfo) {
+	public Response updateResourcesCropInfo(@Context HttpServletRequest request,
+			@ApiParam(name = "resourcesCropInfo") ResourceCropInfo resourceCropInfo) {
 		try {
 			ResourceCropInfo result = service.updateResourceCropInfo(resourceCropInfo);
 			return Response.status(Status.OK).entity(result).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.EDITPAGE + "/{mId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find Media Resource by  ID", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
+
+	public Response getMedia(@ApiParam(value = "ID  for Resource", required = true) @PathParam("mId") String mId) {
+		try {
+
+			Long objId = Long.parseLong(mId);
+			MediaGalleryShow mediaGallery = service.getMediaByID(objId);
+			return Response.status(Status.OK).entity(mediaGallery).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.CREATE)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "create the Ufile object", notes = "return the ufile object on completion", response = UFile.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to create the ufile", response = String.class) })
+
+	public Response createMedia(@Context HttpServletRequest request,
+			@ApiParam(name = "ufileCreateData") MediaGalleryCreate mediaGalleryCreate) {
+		try {
+			MediaGalleryShow result = service.createMedia(request, mediaGalleryCreate);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Data missing").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.UPLOAD)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "create the Ufile object", notes = "return the ufile object on completion", response = UFile.class)
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to create the ufile", response = String.class) })
+
+	public Response uploadResourceMediaGallery(@Context HttpServletRequest request,
+			@ApiParam(name = "ufileCreateData") List<ResourceWithTags> resourceUpload) {
+		try {
+			String result = service.uploadMedia(request, resourceUpload);
+			if (result != null)
+				return Response.status(Status.OK).entity(result).build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Error Uploading").build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.SHOW)
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find Media Resource by  ID", notes = "Returns Media Gallery", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
+
+	public Response getMediaGallery(@DefaultValue("0") @QueryParam("offset") String offset,
+			@DefaultValue("12") @QueryParam("limit") String limit, @DefaultValue("all") @QueryParam("type") String type,
+			@DefaultValue("all") @QueryParam("tags") String tags, @DefaultValue("all") @QueryParam("user") String users,
+			@DefaultValue("all") @QueryParam("mId") String mIds) {
+		try {
+
+			Integer max = Integer.parseInt(limit);
+			Integer offSet = Integer.parseInt(offset);
+
+			MediaGalleryShow mediaGallery = service.getMediaByID(mIds, max, offSet, type, tags, users);
+
+			return Response.status(Status.OK).entity(mediaGallery).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.LIST)
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find Media Resource by  ID", notes = "Returns Media Gallery", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
+
+	public Response getMediaGalleryList(@DefaultValue("0") @QueryParam("offset") String offset,
+			@DefaultValue("12") @QueryParam("limit") String limit) {
+		try {
+
+			Integer max = Integer.parseInt(limit);
+			Integer offSet = Integer.parseInt(offset);
+
+			MediaGalleryListPageData mediaGalleryListPageData = service.getMediaGalleryListPageData(max, offSet);
+
+			return Response.status(Status.OK).entity(mediaGalleryListPageData).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.ALL)
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find All Media Resource", notes = "Returns Media Gallery", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
+
+	public Response getAllMediaGallery() {
+		try {
+
+			List<MediaGallery> mediaGallery = service.getAllMediaGallery();
+			return Response.status(Status.OK).entity(mediaGallery).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@GET
+	@Path(ApiConstants.ALL)
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find All Media Resource ", notes = "Returns List of Media", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
+
+	public Response getAllResources(@DefaultValue("0") @QueryParam("offset") String offset,
+			@DefaultValue("12") @QueryParam("limit") String limit,
+			@DefaultValue("all") @QueryParam("context") String context,
+			@DefaultValue("all") @QueryParam("type") String type, @DefaultValue("all") @QueryParam("tags") String tags,
+			@DefaultValue("all") @QueryParam("user") String users) {
+		try {
+
+			Integer max = Integer.parseInt(limit);
+			Integer offSet = Integer.parseInt(offset);
+
+			ResourceListData resultList = service.getAllResources(max, offSet, context, type, tags, users);
+			return Response.status(Status.OK).entity(resultList).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@DELETE
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.DELETE + "/{mId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Delete MediaGallery by  ID", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
+
+	public Response deleteMedia(@Context HttpServletRequest request,
+			@ApiParam(value = "ID  for Resource", required = true) @PathParam("mId") String mediaGalleryId) {
+		try {
+
+			Long mId = Long.parseLong(mediaGalleryId);
+			String result = service.deleteMediaByID(request, mId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.UPDATE + "/{mId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Update Media Gallery", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Unable TO update Media Gallery", response = String.class) })
+
+	public Response updateMediaGallery(@Context HttpServletRequest request,
+			@ApiParam(value = "ID  for Resource", required = true) @PathParam("mId") String mediaGalleryId,
+			@ApiParam(name = "mediaGallery") MediaGalleryCreate mediaGallery) {
+		try {
+			Long mId = Long.parseLong(mediaGalleryId);
+
+			MediaGalleryShow updatedMediaGallery = service.updateMediaGalleryByID(request, mId, mediaGallery);
+			return Response.status(Status.OK).entity(updatedMediaGallery).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.BULKRESOURCEMAPPING)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Update Media Galleries", notes = "Returns Media Galleries", response = MediaGallery.class, responseContainer = "List")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Unable To update Media Galleries", response = String.class) })
+
+	public Response mediaGalleryBulkResourceMapping(@Context HttpServletRequest request,
+			@ApiParam(name = "mediaGalleryResourceMap") MediaGalleryResourceMapData mediaGalleryResourceMapData) {
+		try {
+			List<MediaGallery> createBulkResourceMapping = service.createBulkResourceMapping(request,
+					mediaGalleryResourceMapData);
+			return Response.status(Status.OK).entity(createBulkResourceMapping).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@GET
+	@Path("/{rId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ApiOperation(value = "Find Resource by  ID", notes = "Returns Resource", response = ResourceData.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
+
+	public Response getResource(
+			@ApiParam(value = "ID  for Resource", required = true) @PathParam("rId") String resourceId) {
+		try {
+
+			Long rID = Long.parseLong(resourceId);
+			ResourceData mediaGallery = service.getResourceDataByID(rID);
+			return Response.status(Status.OK).entity(mediaGallery).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@PUT
+	@Path(ApiConstants.UPDATE)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Update Resource", notes = "Returns Resource", response = ResourceWithTags.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable To update Resource", response = String.class) })
+
+	public Response updateResource(@Context HttpServletRequest request,
+			@ApiParam(name = "resourceWithTags") ResourceWithTags resourceWithTags) {
+		try {
+
+			Resource updatedMediaGallery = service.updateResourceByID(request, resourceWithTags);
+
+			return Response.status(Status.OK).entity(updatedMediaGallery).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+	}
+
+	@DELETE
+	@Path(ApiConstants.DELETE + "/{rId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
+
+	@ValidateUser
+
+	@ApiOperation(value = "Delete resource by  ID", notes = "Returns Media", response = Resource.class, responseContainer = "List")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
+
+	public Response deleteResource(@Context HttpServletRequest request,
+			@ApiParam(value = "ID  for Resource", required = true) @PathParam("rId") String resourceId) {
+		try {
+
+			Long rId = Long.parseLong(resourceId);
+			String result = service.deleteResourceByID(request, rId);
+			return Response.status(Status.OK).entity(result).build();
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).build();
 		}
 	}
 

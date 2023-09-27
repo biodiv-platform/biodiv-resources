@@ -33,5 +33,12 @@ public class ApiConstants {
 	public static final String BULK = "/bulk";
 	public static final String PULLRESOURCE = "/pullResource";
 	public static final String SPECIESFIELD = "/specieField";
+	public static final String MEDIAGALLERY = "/mediaGallery";
+	public static final String UPLOAD = "/upload";
+	public static final String SHOW = "/show";
+	public static final String LIST = "/list";
+	public static final String DELETE = "/delete";
+	public static final String BULKRESOURCEMAPPING = "/bulkResourceMapping";
+	public static final String EDITPAGE = "/editPage";
 
 }

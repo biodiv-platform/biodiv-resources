@@ -67,4 +67,74 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<Long> getResourceIds(List<String> contexts, List<String> types, List<Long> users, List<Long> ids) {
+		String qry = "SELECT R.id FROM Resource R WHERE 1=1";
+
+		if (contexts != null && !contexts.isEmpty() && !contexts.contains("all")) {
+			qry += " AND R.context IN (:contexts)";
+		}
+
+		if (types != null && !types.isEmpty() && !types.contains("all")) {
+			qry += " AND R.type IN (:types)";
+		}
+
+		if (users != null && !users.isEmpty()) {
+			qry += " AND R.uploaderId IN (:users)";
+		}
+
+		if (ids != null) {
+			qry += " AND R.id IN (:ids)";
+		}
+
+		List<Long> resourceIds = null;
+		Session session = sessionFactory.openSession();
+		try {
+			Query<Long> query = session.createQuery(qry);
+
+			if (contexts != null && !contexts.isEmpty() && !contexts.contains("all")) {
+				query.setParameterList("contexts", contexts);
+			}
+
+			if (types != null && !types.isEmpty() && !types.contains("all")) {
+				query.setParameterList("types", types);
+			}
+
+			if (users != null && !users.isEmpty()) {
+				query.setParameterList("users", users);
+			}
+
+			if (ids != null) {
+				query.setParameterList("ids", ids);
+			}
+
+			resourceIds = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+
+		return resourceIds;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Resource> findByIds(List<Long> ids, int limit, int offset) {
+		List<Resource> entities = null;
+		try (Session session = sessionFactory.openSession()) {
+			String qry = "FROM Resource WHERE id IN :ids";
+			Query<Resource> query = session.createQuery(qry);
+			query.setParameterList("ids", ids);
+
+			if (limit > 0 && offset >= 0) {
+				query.setFirstResult(offset).setMaxResults(limit);
+			}
+
+			entities = query.getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return entities;
+	}
+
 }

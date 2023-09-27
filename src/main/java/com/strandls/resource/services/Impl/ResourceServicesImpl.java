@@ -4,6 +4,8 @@
 package com.strandls.resource.services.Impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,11 +14,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 
+import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.strandls.authentication_utility.util.AuthUtil;
 import com.strandls.resource.dao.LicenseDao;
+import com.strandls.resource.dao.MediaGalleryDao;
+import com.strandls.resource.dao.MediaGalleryResourceDao;
 import com.strandls.resource.dao.ObservationResourceDao;
 import com.strandls.resource.dao.ResourceCropDao;
 import com.strandls.resource.dao.ResourceDao;
@@ -24,11 +31,20 @@ import com.strandls.resource.dao.SpeciesFieldResourcesDao;
 import com.strandls.resource.dao.SpeciesResourceDao;
 import com.strandls.resource.dao.UFileDao;
 import com.strandls.resource.pojo.License;
+import com.strandls.resource.pojo.MediaGallery;
+import com.strandls.resource.pojo.MediaGalleryCreate;
+import com.strandls.resource.pojo.MediaGalleryListPageData;
+import com.strandls.resource.pojo.MediaGalleryListTitles;
+import com.strandls.resource.pojo.MediaGalleryResource;
+import com.strandls.resource.pojo.MediaGalleryResourceMapData;
+import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.ObservationResource;
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.pojo.ResourceData;
+import com.strandls.resource.pojo.ResourceListData;
 import com.strandls.resource.pojo.ResourceRating;
+import com.strandls.resource.pojo.ResourceWithTags;
 import com.strandls.resource.pojo.SpeciesFieldResources;
 import com.strandls.resource.pojo.SpeciesPull;
 import com.strandls.resource.pojo.SpeciesResource;
@@ -41,6 +57,11 @@ import com.strandls.resource.util.Constants;
 import com.strandls.user.ApiException;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.UserIbp;
+import com.strandls.utility.controller.UtilityServiceApi;
+import com.strandls.utility.pojo.Tags;
+import com.strandls.utility.pojo.TagsMappingData;
+
+import net.minidev.json.JSONArray;
 
 /**
  * @author Abhishek Rudra
@@ -82,6 +103,24 @@ public class ResourceServicesImpl implements ResourceServices {
 	@Inject
 	private ResourceCropDao resourceCropDao;
 
+	@Inject
+	private MediaGalleryHelper mediaGalleryHelper;
+
+	@Inject
+	private MediaGalleryDao mediaGalleryDao;
+
+	@Inject
+	private UtilityServiceApi utilityServiceApi;
+
+	@Inject
+	private MediaGalleryResourceDao mediaGalleryResourceDao;
+
+	private static final String ROLES = "roles";
+
+	private static final String ROLE_ADMIN = "ROLE_ADMIN";
+
+	private static final String RESOURCE = "resource";
+
 	@Override
 	public List<ResourceData> getResouceURL(String objectType, Long objectId) {
 		List<ResourceData> observationResourceUsers = new ArrayList<ResourceData>();
@@ -92,14 +131,25 @@ public class ResourceServicesImpl implements ResourceServices {
 			resourceIds = speciesResourceDao.findBySpeciesId(objectId);
 		else if (objectType.equalsIgnoreCase(Constants.SPECIESFIELD))
 			resourceIds = speciesFieldResourceDao.findBySpeciesFieldId(objectId);
+		else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY))
+			resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
+
 		if (resourceIds == null || resourceIds.isEmpty())
 			return null;
 		List<Resource> resourceList = resourceDao.findByObjectId(resourceIds);
 		for (Resource resource : resourceList) {
 			try {
 				UserIbp userIbp = userService.getUserIbp(resource.getUploaderId().toString());
-				observationResourceUsers.add(
-						new ResourceData(resource, userIbp, licenseService.getLicenseById(resource.getLicenseId())));
+
+				List<Tags> tags = null;
+				try {
+					tags = utilityServiceApi.getTags(Constants.RESOURCE, resource.getId().toString());
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+
+				observationResourceUsers.add(new ResourceData(resource, userIbp,
+						licenseService.getLicenseById(resource.getLicenseId()), tags));
 			} catch (ApiException e) {
 				logger.error(e.getMessage());
 			}
@@ -136,6 +186,11 @@ public class ResourceServicesImpl implements ResourceServices {
 					SpeciesFieldResources mappingResult = speciesFieldResourceDao.save(entity);
 					logger.debug("Species Resource Mapping Created: " + mappingResult.getSpeciesFieldId() + " and "
 							+ mappingResult.getResourceId());
+				} else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY)) {
+					MediaGalleryResource entity = new MediaGalleryResource(objectId, resource.getId());
+					MediaGalleryResource mappingResult = mediaGalleryResourceDao.save(entity);
+					logger.debug("Media Gallery Resource Mapping Created: " + mappingResult.getMediaGalleryId()
+							+ " and " + mappingResult.getResourceId());
 				}
 
 			}
@@ -148,6 +203,8 @@ public class ResourceServicesImpl implements ResourceServices {
 			resourceIds = speciesResourceDao.findBySpeciesId(objectId);
 		else if (objectType.equalsIgnoreCase(Constants.SPECIESFIELD))
 			resourceIds = speciesFieldResourceDao.findBySpeciesFieldId(objectId);
+		else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY))
+			resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
 		resources = resourceDao.findByObjectId(resourceIds);
 		return resources;
 
@@ -166,6 +223,8 @@ public class ResourceServicesImpl implements ResourceServices {
 				resourceIds = speciesResourceDao.findBySpeciesId(objectId);
 			else if (objectType.equalsIgnoreCase(Constants.SPECIESFIELD))
 				resourceIds = speciesFieldResourceDao.findBySpeciesFieldId(objectId);
+			else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY))
+				resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
 
 			if (resourceIds == null || resourceIds.isEmpty())
 //				resources are getting created for the first time
@@ -203,6 +262,11 @@ public class ResourceServicesImpl implements ResourceServices {
 						SpeciesFieldResources mappingResult = speciesFieldResourceDao.save(entity);
 						logger.debug("Species Resource Mapping Created: " + mappingResult.getSpeciesFieldId() + " and "
 								+ mappingResult.getResourceId());
+					} else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY)) {
+						MediaGalleryResource entity = new MediaGalleryResource(objectId, resource.getId());
+						MediaGalleryResource mappingResult = mediaGalleryResourceDao.save(entity);
+						logger.debug("Media Gallery Resource Mapping Created: " + mappingResult.getMediaGalleryId()
+								+ " and " + mappingResult.getResourceId());
 					}
 				}
 			}
@@ -225,7 +289,10 @@ public class ResourceServicesImpl implements ResourceServices {
 						SpeciesFieldResources speciesFieldResource = speciesFieldResourceDao.findByPair(objectId,
 								oldResource.getId());
 						speciesFieldResourceDao.delete(speciesFieldResource);
-
+					} else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY)) {
+						MediaGalleryResource mediaGalleryResource = mediaGalleryResourceDao.findByPair(objectId,
+								oldResource.getId());
+						mediaGalleryResourceDao.delete(mediaGalleryResource);
 					}
 				}
 			}
@@ -236,6 +303,8 @@ public class ResourceServicesImpl implements ResourceServices {
 				resourceIds = speciesResourceDao.findBySpeciesId(objectId);
 			else if (objectType.equalsIgnoreCase(Constants.SPECIESFIELD))
 				resourceIds = speciesFieldResourceDao.findBySpeciesFieldId(objectId);
+			else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY))
+				resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
 
 			resourceList = resourceDao.findByObjectId(resourceIds);
 			return resourceList;
@@ -259,6 +328,8 @@ public class ResourceServicesImpl implements ResourceServices {
 			resourceIds = speciesResourceDao.findBySpeciesId(objectId);
 		else if (objectType.equalsIgnoreCase(Constants.SPECIESFIELD))
 			resourceIds = speciesFieldResourceDao.findBySpeciesFieldId(objectId);
+		else if (objectType.equalsIgnoreCase(Constants.MEDIAGALLERY))
+			resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
 
 		return resourceDao.findByObjectId(resourceIds);
 	}
@@ -338,13 +409,13 @@ public class ResourceServicesImpl implements ResourceServices {
 				if (speciesPullMap.containsKey(observationId)) {
 					List<ResourceData> resourcesDataList = speciesPullMap.get(observationId);
 					resourcesDataList.add(new ResourceData(resource, userIbp,
-							licenseService.getLicenseById(resource.getLicenseId())));
+							licenseService.getLicenseById(resource.getLicenseId()), null));
 					speciesPullMap.put(observationId, resourcesDataList);
 
 				} else {
 					List<ResourceData> resourcesDataList = new ArrayList<ResourceData>();
 					resourcesDataList.add(new ResourceData(resource, userIbp,
-							licenseService.getLicenseById(resource.getLicenseId())));
+							licenseService.getLicenseById(resource.getLicenseId()), null));
 					speciesPullMap.put(observationId, resourcesDataList);
 				}
 
@@ -447,6 +518,410 @@ public class ResourceServicesImpl implements ResourceServices {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
+		return null;
+	}
+
+	@Override
+	public MediaGalleryShow getMediaByID(Long objId) {
+		MediaGalleryShow mediaGalleryShow = new MediaGalleryShow();
+		MediaGallery mediaGallerry = mediaGalleryDao.findById(objId);
+
+		try {
+			List<ResourceData> mediaGalleryResource = getResouceURL(Constants.MEDIAGALLERY, objId);
+			mediaGalleryShow.setMediaGallery(mediaGallerry);
+			mediaGalleryShow.setMediaGalleryResource(mediaGalleryResource);
+			mediaGalleryShow.setTotalCount(mediaGalleryResource.size());
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		return mediaGalleryShow;
+	}
+
+	@Override
+	public MediaGalleryShow createMedia(HttpServletRequest request, MediaGalleryCreate mediaGalleryCreate) {
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+
+		JSONArray roles = (JSONArray) profile.getAttribute(ROLES);
+
+		if (!roles.contains(ROLE_ADMIN)) {
+			return null;
+		}
+
+		Long userId = Long.parseLong(profile.getId());
+		MediaGallery mediaGallery = new MediaGallery();
+
+		try {
+			mediaGallery = mediaGalleryHelper.createMediaGalleryMapping(userId, mediaGalleryCreate);
+			mediaGalleryDao.save(mediaGallery);
+
+			if (mediaGallery == null) {
+				return null;
+			}
+
+			List<ResourceWithTags> resourceList = mediaGalleryCreate.getResourcesList();
+
+			mediaGalleryHelper.createResourceMapping(request, userId, resourceList, mediaGallery.getId());
+
+			return getMediaByID(mediaGallery.getId());
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+
+	}
+
+	@Override
+	public String uploadMedia(HttpServletRequest request, List<ResourceWithTags> resourceUpload) {
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+		Long userId = Long.parseLong(profile.getId());
+
+		if (resourceUpload.isEmpty()) {
+			return null;
+		}
+
+		mediaGalleryHelper.createResourceMapping(request, userId, resourceUpload, null);
+
+		return "Resource Uploaded Successfully";
+	}
+
+	@Override
+	public ResourceListData getAllResources(Integer limit, Integer offset, String contexts, String mediaTypes,
+			String tags, String users) {
+
+		List<String> mediaTypeList = Arrays.asList(mediaTypes.split(","));
+		List<String> contextList = Arrays.asList(contexts.split(","));
+		List<String> userList = Arrays.asList(users.split(","));
+		ResourceListData resourceListData = new ResourceListData();
+
+		List<Long> usersLong = new ArrayList<>();
+		if (!userList.contains("all")) {
+			for (String user : userList) {
+				usersLong.add(Long.parseLong(user));
+			}
+		}
+
+		List<Long> resourcesId = resourceDao.getResourceIds(contextList, mediaTypeList, usersLong, null);
+		List<Long> commonResourcesId = resourcesId;
+
+		if (tags != null && !tags.isEmpty() && !tags.equals("all")) {
+			try {
+
+				List<Long> tagResourcesId = utilityServiceApi.getResourceIds(tags, contexts.toLowerCase(), "all");
+
+				commonResourcesId = resourcesId.stream().filter(tagResourcesId::contains).collect(Collectors.toList());
+
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+			}
+		}
+		Long totalCount = (long) commonResourcesId.size();
+
+		List<ResourceData> resourceDataList = getResources(limit, offset, commonResourcesId);
+		resourceListData.setResourceDataList(resourceDataList);
+		resourceListData.setTotalCount(totalCount);
+
+		return (resourceListData);
+	}
+
+	public List<ResourceData> getResources(Integer limit, Integer offset, List<Long> resourcesIds) {
+		List<Resource> resources = resourceDao.findByIds(resourcesIds, limit, offset);
+		List<ResourceData> resourceDataList = new ArrayList<>();
+
+		for (Resource item : resources) {
+			ResourceData resourceData = new ResourceData();
+			try {
+				resourceData.setUserIbp(userService.getUserIbp(item.getUploaderId().toString()));
+				resourceData.setTags(utilityServiceApi.getTags(RESOURCE, item.getId().toString()));
+				resourceData.setLicense(licenseService.getLicenseById(item.getLicenseId()));
+
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+			}
+
+			resourceData.setResource(item);
+			resourceDataList.add(resourceData);
+		}
+		return (resourceDataList);
+
+	}
+
+	@Override
+	public MediaGalleryShow getMediaByID(String mIds, Integer limit, Integer offSet, String mediaTypes, String tags,
+			String users) {
+		MediaGalleryShow mediaGalleryShow = new MediaGalleryShow();
+		MediaGallery mediaGallery = new MediaGallery();
+
+		List<String> mediaTypeList = Arrays.asList(mediaTypes.split(","));
+		List<String> userList = Arrays.asList(users.split(","));
+		List<String> mIdList = Arrays.asList(mIds.split(","));
+
+		List<Long> usersLong = new ArrayList<>();
+		if (!userList.contains("all")) {
+			for (String user : userList) {
+				usersLong.add(Long.parseLong(user));
+			}
+		}
+
+		List<Long> mIdsLong = new ArrayList<>();
+
+		if (!mIdList.contains("all") && !mIdList.isEmpty()) {
+			for (String mId : mIdList) {
+				mIdsLong.add(Long.parseLong(mId));
+			}
+			if ((mIdsLong.size() == 1)) {
+				mediaGallery = mediaGalleryDao.findById(mIdsLong.get(0));
+			}
+		} else {
+			mediaGallery.setName("All media gallery");
+			mediaGallery.setDescription("This is all media Gallery");
+
+		}
+
+		List<Long> resourceIds = mediaGalleryResourceDao.findByMediaIds(mIdsLong);
+
+		List<Long> filteredIds = resourceDao.getResourceIds(null, mediaTypeList, usersLong, resourceIds);
+
+		List<Long> commonResourcesId = filteredIds;
+
+		List<Long> tagResourcesId;
+
+		if (tags != null && !tags.isEmpty() && !tags.equals("all")) {
+			try {
+
+				tagResourcesId = utilityServiceApi.getResourceIds(tags, RESOURCE, "all");
+
+				commonResourcesId = filteredIds.stream().filter(tagResourcesId::contains).collect(Collectors.toList());
+
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+			}
+		}
+
+		Long totalCount = (long) commonResourcesId.size();
+
+		List<ResourceData> resourceDataList = getResources(limit, offSet, commonResourcesId);
+
+		mediaGalleryShow.setMediaGallery(mediaGallery);
+		mediaGalleryShow.setMediaGalleryResource(resourceDataList);
+		mediaGalleryShow.setTotalCount(totalCount);
+
+		return mediaGalleryShow;
+	}
+
+	@Override
+	public String deleteMediaByID(HttpServletRequest request, Long mId) {
+		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+
+			JSONArray roles = (JSONArray) profile.getAttribute(ROLES);
+
+			if (!roles.contains(ROLE_ADMIN)) {
+				return null;
+			}
+			MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
+
+			List<Resource> resources = new ArrayList<>();
+			updateResource(Constants.MEDIAGALLERY, mId, resources);
+
+			mediaGalleryDao.delete(mediaGallery);
+
+			return "Media Gallery Deleted Sucessfully";
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public MediaGalleryShow updateMediaGalleryByID(HttpServletRequest request, Long mId,
+			MediaGalleryCreate mediaGalleryData) {
+
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+
+		JSONArray roles = (JSONArray) profile.getAttribute(ROLES);
+
+		Long userId = Long.parseLong(profile.getId());
+
+		if (!roles.contains(ROLE_ADMIN)) {
+			return null;
+		}
+
+		MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
+
+		mediaGallery.setName(mediaGalleryData.getName());
+		mediaGallery.setDescription(mediaGalleryData.getDescription());
+		mediaGallery.setUpdatedOn(new Date());
+		mediaGalleryDao.update(mediaGallery);
+
+		List<ResourceWithTags> resourceWithTags = mediaGalleryData.getResourcesList();
+
+		// existing resource
+		List<ResourceWithTags> resourcesWithId = resourceWithTags.stream().filter(rwt -> rwt.getId() != null)
+				.collect(Collectors.toList());
+
+		List<Resource> oldResource = mediaGalleryHelper.convertResourceWithTagsList(resourcesWithId);
+		updateResource(Constants.MEDIAGALLERY, mId, oldResource);
+
+		for (ResourceWithTags resource : resourcesWithId) {
+			TagsMappingData tagsMapping = mediaGalleryHelper.createTagsMappingData(resource.getId(),
+					resource.getTags());
+			mediaGalleryHelper.updateTagsMapping(request, tagsMapping);
+
+		}
+
+		// new resource
+		List<ResourceWithTags> newResource = resourceWithTags.stream().filter(rwt -> rwt.getId() == null)
+				.collect(Collectors.toList());
+
+		mediaGalleryHelper.createResourceMapping(request, userId, newResource, mediaGallery.getId());
+
+		return getMediaByID(mId);
+	}
+
+	@Override
+	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request,
+			MediaGalleryResourceMapData mediaGalleryResourceMapData) {
+
+		List<Long> mIdList = mediaGalleryResourceMapData.getMediaGalleryIds();
+
+		List<MediaGallery> mediaGalleryList = new ArrayList<>();
+
+		if (!mIdList.isEmpty()) {
+			List<Resource> resources = resourceDao.findByIds(mediaGalleryResourceMapData.getResourceIds(), -1, -1);
+
+			for (Long mId : mIdList) {
+				MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
+
+				if (mediaGallery != null) {
+					for (Resource resource : resources) {
+						MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
+						mediaGalleryResourceDao.save(entity);
+					}
+					mediaGalleryList.add(mediaGallery);
+				}
+			}
+		}
+
+		return mediaGalleryList;
+	}
+
+	@Override
+	public List<MediaGallery> getAllMediaGallery() {
+		return mediaGalleryDao.findAll();
+	}
+
+	@Override
+	public MediaGalleryListPageData getMediaGalleryListPageData(Integer max, Integer offSet) {
+		List<MediaGallery> mediaGalleryList = mediaGalleryDao.findAll(max, offSet);
+		List<MediaGalleryListTitles> mediaGalleryListTitles = new ArrayList<>();
+
+		for (MediaGallery mediaGallery : mediaGalleryList) {
+
+			MediaGalleryListTitles mediaGalleryListItem = new MediaGalleryListTitles();
+
+			List<Long> resourcesIds = mediaGalleryResourceDao.findByMediaId(mediaGallery.getId());
+
+			mediaGalleryListItem.setId(mediaGallery.getId());
+			mediaGalleryListItem.setName(mediaGallery.getName());
+			mediaGalleryListItem.setDescription(mediaGallery.getDescription());
+			mediaGalleryListItem.setLastUpdated(mediaGallery.getUpdatedOn());
+			mediaGalleryListItem.setReprImage(getReprImage(resourcesIds));
+			mediaGalleryListItem.setTotalMedia((long) resourcesIds.size());
+
+			mediaGalleryListTitles.add(mediaGalleryListItem);
+
+		}
+
+		return new MediaGalleryListPageData(mediaGalleryDao.getTotalMediaGalleryCount(), mediaGalleryListTitles);
+	}
+
+	public String getReprImage(List<Long> resourcesIds) {
+
+		List<Resource> resources = resourceDao.findByIds(resourcesIds, -1, -1);
+
+		for (Resource resource : resources) {
+			if (resource.getType() != null && resource.getType().equals("IMAGE")) {
+				return resource.getFileName();
+			}
+		}
+
+		return null;
+
+	}
+
+	@Override
+	public Resource updateResourceByID(HttpServletRequest request, ResourceWithTags resourceWithTags) {
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+		JSONArray roles = (JSONArray) profile.getAttribute(ROLES);
+		Long userId = Long.parseLong(profile.getId());
+
+		Resource resource = resourceDao.findById(resourceWithTags.getId());
+
+		if (roles.contains(ROLE_ADMIN) || resource.getUploaderId().equals(userId)) {
+			resource.setDescription(resourceWithTags.getCaption());
+			resource.setContributor(resourceWithTags.getContributor());
+			resource.setRating(resourceWithTags.getRating());
+			resource.setLicenseId(resourceWithTags.getLicenseId());
+			resourceDao.update(resource);
+
+		}
+
+		TagsMappingData tagsMapping = mediaGalleryHelper.createTagsMappingData(resourceWithTags.getId(),
+				resourceWithTags.getTags());
+		mediaGalleryHelper.updateTagsMapping(request, tagsMapping);
+
+		return resource;
+	}
+
+	@Override
+	public String deleteResourceByID(HttpServletRequest request, Long rId) {
+		try {
+
+			CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+			JSONArray roles = (JSONArray) profile.getAttribute(ROLES);
+			Long userId = Long.parseLong(profile.getId());
+			Resource resource = resourceDao.findById(rId);
+
+			if (roles.contains(ROLE_ADMIN) || resource.getUploaderId().equals(userId)) {
+				List<MediaGalleryResource> mediaGalleryResource = mediaGalleryResourceDao.findByResourceId(rId);
+				for (MediaGalleryResource item : mediaGalleryResource) {
+					mediaGalleryResourceDao.delete(item);
+				}
+				resourceDao.delete(resource);
+
+				return "Resource Deleted Sucessfully";
+
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		return null;
+
+	}
+
+	@Override
+	public ResourceData getResourceDataByID(Long rID) {
+		ResourceData resourceData = new ResourceData();
+		Resource resource = resourceDao.findById(rID);
+		if (resource == null) {
+			return null;
+		}
+		try {
+			resourceData.setResource(resource);
+			resourceData.setUserIbp(userService.getUserIbp(resource.getUploaderId().toString()));
+			resourceData.setTags(utilityServiceApi.getTags(RESOURCE, resource.getId().toString()));
+			resourceData.setLicense(licenseService.getLicenseById(resource.getLicenseId()));
+
+			return resourceData;
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
 		return null;
 	}
 

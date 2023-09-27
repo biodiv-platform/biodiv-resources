@@ -35,10 +35,12 @@ import com.google.inject.Injector;
 import com.google.inject.Scopes;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.google.inject.servlet.ServletModule;
+import com.strandls.file.api.UploadApi;
 import com.strandls.resource.controllers.ResourceControllerModule;
 import com.strandls.resource.dao.ResourceDaoModule;
 import com.strandls.resource.services.Impl.ResourceServicesModule;
 import com.strandls.user.controller.UserServiceApi;
+import com.strandls.utility.controller.UtilityServiceApi;
 
 /**
  * @author Abhishek Rudra
@@ -51,7 +53,7 @@ public class ResourceServeletContextListener extends GuiceServletContextListener
 	@Override
 	protected Injector getInjector() {
 
-		Injector injector = Guice.createInjector(new ServletModule() {
+		return Guice.createInjector(new ServletModule() {
 			@Override
 			protected void configureServlets() {
 
@@ -68,7 +70,7 @@ public class ResourceServeletContextListener extends GuiceServletContextListener
 				configuration = configuration.configure();
 				SessionFactory sessionFactory = configuration.buildSessionFactory();
 
-				Map<String, String> props = new HashMap<String, String>();
+				Map<String, String> props = new HashMap<>();
 				props.put("javax.ws.rs.Application", ApplicationConfig.class.getName());
 				props.put("jersey.config.server.provider.packages", "com");
 				props.put("jersey.config.server.wadl.disableWadl", "true");
@@ -77,12 +79,13 @@ public class ResourceServeletContextListener extends GuiceServletContextListener
 
 				bind(UserServiceApi.class).in(Scopes.SINGLETON);
 				bind(ServletContainer.class).in(Scopes.SINGLETON);
+				bind(UtilityServiceApi.class).in(Scopes.SINGLETON);
+				bind(UploadApi.class).in(Scopes.SINGLETON);
+				bind(Headers.class).in(Scopes.SINGLETON);
 				serve("/api/*").with(ServletContainer.class, props);
 
 			}
 		}, new ResourceControllerModule(), new ResourceServicesModule(), new ResourceDaoModule());
-
-		return injector;
 
 	}
 
@@ -90,7 +93,7 @@ public class ResourceServeletContextListener extends GuiceServletContextListener
 			throws URISyntaxException, IOException, ClassNotFoundException {
 
 		List<String> classNames = getClassNamesFromPackage(packageName);
-		List<Class<?>> classes = new ArrayList<Class<?>>();
+		List<Class<?>> classes = new ArrayList<>();
 		for (String className : classNames) {
 			Class<?> cls = Class.forName(className);
 			Annotation[] annotations = cls.getAnnotations();
@@ -109,7 +112,7 @@ public class ResourceServeletContextListener extends GuiceServletContextListener
 			throws URISyntaxException, IOException {
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		ArrayList<String> names = new ArrayList<String>();
+		ArrayList<String> names = new ArrayList<>();
 		URL packageURL = classLoader.getResource(packageName);
 
 		URI uri = new URI(packageURL.toString());
