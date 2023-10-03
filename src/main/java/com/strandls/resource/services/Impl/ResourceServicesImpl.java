@@ -830,6 +830,7 @@ public class ResourceServicesImpl implements ResourceServices {
 			mediaGalleryListItem.setName(mediaGallery.getName());
 			mediaGalleryListItem.setDescription(mediaGallery.getDescription());
 			mediaGalleryListItem.setLastUpdated(mediaGallery.getUpdatedOn());
+			mediaGalleryListItem.setCreatedOn(mediaGallery.getCreatedOn());
 			mediaGalleryListItem.setReprImage(getReprImage(resourcesIds));
 			mediaGalleryListItem.setTotalMedia((long) resourcesIds.size());
 
