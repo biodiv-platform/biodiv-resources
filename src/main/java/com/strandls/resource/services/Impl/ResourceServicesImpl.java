@@ -794,17 +794,21 @@ public class ResourceServicesImpl implements ResourceServices {
 		if (!mIdList.isEmpty()) {
 			List<Resource> resources = resourceDao.findByIds(mediaGalleryResourceMapData.getResourceIds(), -1, -1);
 
-			for (Long mId : mIdList) {
+			mIdList.forEach(mId -> {
 				MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
+				List<Long> resourceIds = getResouceURL(Constants.MEDIAGALLERY, mId).stream()
+						.filter(resourceData -> resourceData != null && resourceData.getResource() != null)
+						.map(resourceData -> resourceData.getResource().getId()).collect(Collectors.toList());
 
 				if (mediaGallery != null) {
-					for (Resource resource : resources) {
+					resources.stream().filter(resource -> resourceIds.contains(resource.getId())).forEach(resource -> {
 						MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
 						mediaGalleryResourceDao.save(entity);
-					}
+					});
+
 					mediaGalleryList.add(mediaGallery);
 				}
-			}
+			});
 		}
 
 		return mediaGalleryList;
