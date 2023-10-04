@@ -1,9 +1,13 @@
 package com.strandls.resource.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +52,24 @@ public class MediaGalleryDao extends AbstractDAO<MediaGallery, Long> {
 		} finally {
 			session.close();
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<MediaGallery> findByIds(List<Long> ids) {
+		String qry = "from MediaGallery where id IN :ids";
+		Session session = sessionFactory.openSession();
+		List<MediaGallery> result = new ArrayList<>();
+		try {
+			Query<MediaGallery> query = session.createQuery(qry);
+			query.setParameter("ids", ids);
+			result = query.getResultList();
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			session.close();
+		}
+		return result;
 	}
 
 }

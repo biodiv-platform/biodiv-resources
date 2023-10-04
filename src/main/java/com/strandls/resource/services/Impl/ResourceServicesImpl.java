@@ -36,6 +36,7 @@ import com.strandls.resource.pojo.MediaGalleryCreate;
 import com.strandls.resource.pojo.MediaGalleryListPageData;
 import com.strandls.resource.pojo.MediaGalleryListTitles;
 import com.strandls.resource.pojo.MediaGalleryResource;
+import com.strandls.resource.pojo.MediaGalleryResourceData;
 import com.strandls.resource.pojo.MediaGalleryResourceMapData;
 import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.ObservationResource;
@@ -917,19 +918,31 @@ public class ResourceServicesImpl implements ResourceServices {
 	}
 
 	@Override
-	public ResourceData getResourceDataByID(Long rID) {
-		ResourceData resourceData = new ResourceData();
+	public MediaGalleryResourceData getResourceDataByID(Long rID) {
 		Resource resource = resourceDao.findById(rID);
 		if (resource == null) {
 			return null;
 		}
 		try {
+			ResourceData resourceData = new ResourceData();
+			MediaGalleryResourceData mediaGalleryResourceData = new MediaGalleryResourceData();
+
 			resourceData.setResource(resource);
 			resourceData.setUserIbp(userService.getUserIbp(resource.getUploaderId().toString()));
 			resourceData.setTags(utilityServiceApi.getTags(RESOURCE, resource.getId().toString()));
 			resourceData.setLicense(licenseService.getLicenseById(resource.getLicenseId()));
+			mediaGalleryResourceData.setResourceData(resourceData);
 
-			return resourceData;
+			List<MediaGalleryResource> mediaGalleryResources = mediaGalleryResourceDao.findByResourceId(rID);
+
+			List<Long> mId = mediaGalleryResources.stream().map(MediaGalleryResource::getMediaGalleryId)
+					.collect(Collectors.toList());
+
+			List<MediaGallery> mediaGallery = mediaGalleryDao.findByIds(mId);
+
+			mediaGalleryResourceData.setMediaGallery(mediaGallery);
+
+			return mediaGalleryResourceData;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}

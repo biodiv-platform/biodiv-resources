@@ -28,6 +28,7 @@ import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
 import com.strandls.resource.pojo.MediaGalleryListPageData;
+import com.strandls.resource.pojo.MediaGalleryResourceData;
 import com.strandls.resource.pojo.MediaGalleryResourceMapData;
 import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.Resource;
@@ -586,7 +587,7 @@ public class ResourceController {
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
 
-	@ApiOperation(value = "Find Resource by  ID", notes = "Returns Resource", response = ResourceData.class, responseContainer = "List")
+	@ApiOperation(value = "Find Resource by  ID", notes = "Returns Resource", response = MediaGalleryResourceData.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
 
 	public Response getResource(
@@ -594,7 +595,7 @@ public class ResourceController {
 		try {
 
 			Long rID = Long.parseLong(resourceId);
-			ResourceData mediaGallery = service.getResourceDataByID(rID);
+			MediaGalleryResourceData mediaGallery = service.getResourceDataByID(rID);
 			return Response.status(Status.OK).entity(mediaGallery).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
