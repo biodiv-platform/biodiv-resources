@@ -875,20 +875,50 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		Resource resource = resourceDao.findById(resourceWithTags.getId());
 
-		if (roles.contains(ROLE_ADMIN) || resource.getUploaderId().equals(userId)) {
-			resource.setDescription(resourceWithTags.getCaption());
-			resource.setContributor(resourceWithTags.getContributor());
-			resource.setRating(resourceWithTags.getRating());
-			resource.setLicenseId(resourceWithTags.getLicenseId());
-			resourceDao.update(resource);
-
+		if (!roles.contains(ROLE_ADMIN) && !resource.getUploaderId().equals(userId)) {
+			return resource;
 		}
+
+		updateResourceDetails(resource, resourceWithTags);
+
+		updateMediaGallery(resourceWithTags, resource);
 
 		TagsMappingData tagsMapping = mediaGalleryHelper.createTagsMappingData(resourceWithTags.getId(),
 				resourceWithTags.getTags());
 		mediaGalleryHelper.updateTagsMapping(request, tagsMapping);
 
 		return resource;
+	}
+
+	private void updateResourceDetails(Resource resource, ResourceWithTags resourceWithTags) {
+		resource.setDescription(resourceWithTags.getCaption());
+		resource.setContributor(resourceWithTags.getContributor());
+		resource.setRating(resourceWithTags.getRating());
+		resource.setLicenseId(resourceWithTags.getLicenseId());
+		resourceDao.update(resource);
+	}
+
+	private void updateMediaGallery(ResourceWithTags resourceWithTags, Resource resource) {
+		List<Long> newMediaGalleryIds = resourceWithTags.getmId();
+
+		List<Long> existingMediaGalleryIds = getResourceDataByID(resourceWithTags.getId()).getMediaGallery().stream()
+				.map(MediaGallery::getId).collect(Collectors.toList());
+
+		List<Long> removedIds = existingMediaGalleryIds.stream().filter(id -> !newMediaGalleryIds.contains(id))
+				.collect(Collectors.toList());
+
+		List<Long> addedIds = newMediaGalleryIds.stream().filter(id -> !existingMediaGalleryIds.contains(id))
+				.collect(Collectors.toList());
+
+		for (Long mId : addedIds) {
+			MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
+			mediaGalleryResourceDao.save(entity);
+		}
+
+		for (Long mId : removedIds) {
+			MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
+			mediaGalleryResourceDao.delete(entity);
+		}
 	}
 
 	@Override
