@@ -572,10 +572,12 @@ public class ResourceController {
 			@ApiResponse(code = 400, message = "Unable To update Media Galleries", response = String.class) })
 
 	public Response mediaGalleryBulkResourceMapping(@Context HttpServletRequest request,
-			@ApiParam(name = "mediaGalleryResourceMap") MediaGalleryResourceMapData mediaGalleryResourceMapData) {
+			@ApiParam(name = "mediaGalleryResourceMap") MediaGalleryResourceMapData mediaGalleryResourceMapData,
+			@DefaultValue("false") @QueryParam("selectAll") Boolean selectAll,
+			@QueryParam("unSelected") String unSelectedIds) {
 		try {
 			List<MediaGallery> createBulkResourceMapping = service.createBulkResourceMapping(request,
-					mediaGalleryResourceMapData);
+					mediaGalleryResourceMapData, selectAll, unSelectedIds);
 			return Response.status(Status.OK).entity(createBulkResourceMapping).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();

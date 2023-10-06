@@ -5,6 +5,7 @@ package com.strandls.resource.services.Impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -786,30 +787,43 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	@Override
 	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request,
-			MediaGalleryResourceMapData mediaGalleryResourceMapData) {
+			MediaGalleryResourceMapData mediaGalleryResourceMapData, Boolean selectAll, String unSelectedIds) {
 
 		List<Long> mIdList = mediaGalleryResourceMapData.getMediaGalleryIds();
 
+		if (mIdList.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<Long> unSelectedResourceIds = Arrays.stream(unSelectedIds.split(",")).map(Long::parseLong)
+				.collect(Collectors.toList());
+
+		List<Resource> resources = (Boolean.TRUE.equals(selectAll) && unSelectedResourceIds.isEmpty())
+				? resourceDao.findAll()
+				: resourceDao.findAll().stream().filter(
+						resource -> Boolean.TRUE.equals(selectAll) && unSelectedResourceIds.contains(resource.getId()))
+						.collect(Collectors.toList());
+
+		if (!Boolean.TRUE.equals(selectAll)) {
+			resources = resourceDao.findByIds(mediaGalleryResourceMapData.getResourceIds(), -1, -1);
+		}
+
 		List<MediaGallery> mediaGalleryList = new ArrayList<>();
 
-		if (!mIdList.isEmpty()) {
-			List<Resource> resources = resourceDao.findByIds(mediaGalleryResourceMapData.getResourceIds(), -1, -1);
+		for (Long mId : mIdList) {
+			MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
 
-			for (Long mId : mIdList) {
-				MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
+			if (mediaGallery != null) {
 
-				if (mediaGallery != null) {
+				List<Long> existingResourceIds = getResourceIdsForMediaGallery(mId);
 
-					List<Long> existingResourceIds = getResourceIdsForMediaGallery(mId);
-
-					for (Resource resource : resources) {
-						if (!existingResourceIds.contains(resource.getId())) {
-							MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
-							mediaGalleryResourceDao.save(entity);
-						}
+				for (Resource resource : resources) {
+					if (!existingResourceIds.contains(resource.getId())) {
+						MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
+						mediaGalleryResourceDao.save(entity);
 					}
-					mediaGalleryList.add(mediaGallery);
 				}
+				mediaGalleryList.add(mediaGallery);
 			}
 		}
 

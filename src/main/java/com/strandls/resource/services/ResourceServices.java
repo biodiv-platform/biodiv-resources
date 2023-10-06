@@ -75,7 +75,7 @@ public interface ResourceServices {
 			MediaGalleryCreate mediaGallery);
 
 	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request,
-			MediaGalleryResourceMapData mediaGalleryResourceMapData);
+			MediaGalleryResourceMapData mediaGalleryResourceMapData, Boolean selectAll, String unSelectedIds);
 
 	public List<MediaGallery> getAllMediaGallery();
 
