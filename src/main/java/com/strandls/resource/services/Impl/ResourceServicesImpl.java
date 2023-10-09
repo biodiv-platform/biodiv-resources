@@ -798,11 +798,14 @@ public class ResourceServicesImpl implements ResourceServices {
 		List<Long> unSelectedResourceIds = Arrays.stream(unSelectedIds.split(",")).map(Long::parseLong)
 				.collect(Collectors.toList());
 
-		List<Resource> resources = (Boolean.TRUE.equals(selectAll) && unSelectedResourceIds.isEmpty())
-				? resourceDao.findAll()
-				: resourceDao.findAll().stream().filter(
-						resource -> Boolean.TRUE.equals(selectAll) && unSelectedResourceIds.contains(resource.getId()))
-						.collect(Collectors.toList());
+		List<Resource> resources;
+		// Check the conditions to determine how to fetch resources
+		if (Boolean.TRUE.equals(selectAll) && unSelectedResourceIds.isEmpty()) {
+			resources = resourceDao.findAll();
+		} else {
+			resources = resourceDao.findAll().stream()
+					.filter(resource -> !unSelectedResourceIds.contains(resource.getId())).collect(Collectors.toList());
+		}
 
 		if (!Boolean.TRUE.equals(selectAll)) {
 			resources = resourceDao.findByIds(mediaGalleryResourceMapData.getResourceIds(), -1, -1);
