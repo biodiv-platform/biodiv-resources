@@ -490,7 +490,7 @@ public class ResourceController {
 
 	@POST
 	@Path(ApiConstants.ALL)
-	@Consumes(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 
 	@ApiOperation(value = "Find All Media Resource ", notes = "Returns List of Media", response = ResourceData.class, responseContainer = "List")
