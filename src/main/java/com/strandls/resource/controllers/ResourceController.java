@@ -29,7 +29,6 @@ import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
 import com.strandls.resource.pojo.MediaGalleryListPageData;
 import com.strandls.resource.pojo.MediaGalleryResourceData;
-import com.strandls.resource.pojo.MediaGalleryResourceMapData;
 import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
@@ -489,7 +488,7 @@ public class ResourceController {
 		}
 	}
 
-	@GET
+	@POST
 	@Path(ApiConstants.ALL)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -497,17 +496,23 @@ public class ResourceController {
 	@ApiOperation(value = "Find All Media Resource ", notes = "Returns List of Media", response = ResourceData.class, responseContainer = "List")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
 
-	public Response getAllResources(@DefaultValue("0") @QueryParam("offset") String offset,
+	public Response getAllResources(@Context HttpServletRequest request,
+			@DefaultValue("0") @QueryParam("offset") String offset,
 			@DefaultValue("12") @QueryParam("limit") String limit,
 			@DefaultValue("all") @QueryParam("context") String context,
 			@DefaultValue("all") @QueryParam("type") String type, @DefaultValue("all") @QueryParam("tags") String tags,
-			@DefaultValue("all") @QueryParam("user") String users) {
+			@DefaultValue("all") @QueryParam("user") String users,
+			@DefaultValue("false") @QueryParam("isBulkPosting") Boolean isBulkPosting,
+			@DefaultValue("false") @QueryParam("selectAll") Boolean selectAll,
+			@QueryParam("unSelected") String unSelectedIds, @QueryParam("resourceIds") String resourceIds,
+			@QueryParam("mediaGalleryIds") String mediaGalleryIds) {
 		try {
 
 			Integer max = Integer.parseInt(limit);
 			Integer offSet = Integer.parseInt(offset);
 
-			ResourceListData resultList = service.getAllResources(max, offSet, context, type, tags, users);
+			ResourceListData resultList = service.getAllResources(max, offSet, context, type, tags, users, request,
+					isBulkPosting, selectAll, unSelectedIds, resourceIds, mediaGalleryIds);
 			return Response.status(Status.OK).entity(resultList).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
@@ -555,30 +560,6 @@ public class ResourceController {
 
 			MediaGalleryShow updatedMediaGallery = service.updateMediaGalleryByID(request, mId, mediaGallery);
 			return Response.status(Status.OK).entity(updatedMediaGallery).build();
-		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).build();
-		}
-	}
-
-	@PUT
-	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.BULKRESOURCEMAPPING)
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ValidateUser
-
-	@ApiOperation(value = "Update Media Galleries", notes = "Returns Media Galleries", response = MediaGallery.class, responseContainer = "List")
-	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "Unable To update Media Galleries", response = String.class) })
-
-	public Response mediaGalleryBulkResourceMapping(@Context HttpServletRequest request,
-			@ApiParam(name = "mediaGalleryResourceMap") MediaGalleryResourceMapData mediaGalleryResourceMapData,
-			@DefaultValue("false") @QueryParam("selectAll") Boolean selectAll,
-			@QueryParam("unSelected") String unSelectedIds) {
-		try {
-			List<MediaGallery> createBulkResourceMapping = service.createBulkResourceMapping(request,
-					mediaGalleryResourceMapData, selectAll, unSelectedIds);
-			return Response.status(Status.OK).entity(createBulkResourceMapping).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}

@@ -38,7 +38,6 @@ import com.strandls.resource.pojo.MediaGalleryListPageData;
 import com.strandls.resource.pojo.MediaGalleryListTitles;
 import com.strandls.resource.pojo.MediaGalleryResource;
 import com.strandls.resource.pojo.MediaGalleryResourceData;
-import com.strandls.resource.pojo.MediaGalleryResourceMapData;
 import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.ObservationResource;
 import com.strandls.resource.pojo.Resource;
@@ -591,7 +590,8 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	@Override
 	public ResourceListData getAllResources(Integer limit, Integer offset, String contexts, String mediaTypes,
-			String tags, String users) {
+			String tags, String users, HttpServletRequest request, Boolean isBulkPosting, Boolean selectAll,
+			String unSelectedIds, String resourceIds, String mediaGalleryIds) {
 
 		List<String> mediaTypeList = Arrays.asList(mediaTypes.split(","));
 		List<String> contextList = Arrays.asList(contexts.split(","));
@@ -620,6 +620,11 @@ public class ResourceServicesImpl implements ResourceServices {
 			}
 		}
 		Long totalCount = (long) commonResourcesId.size();
+		if (Boolean.TRUE.equals(isBulkPosting)) {
+			createBulkResourceMapping(request, resourceIds, mediaGalleryIds, selectAll, unSelectedIds,
+					commonResourcesId);
+
+		}
 
 		List<ResourceData> resourceDataList = getResources(limit, offset, commonResourcesId);
 		resourceListData.setResourceDataList(resourceDataList);
@@ -785,31 +790,35 @@ public class ResourceServicesImpl implements ResourceServices {
 		return getMediaByID(mId);
 	}
 
-	@Override
-	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request,
-			MediaGalleryResourceMapData mediaGalleryResourceMapData, Boolean selectAll, String unSelectedIds) {
+	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request, String resourceIds,
+			String mediaGalleryIds, Boolean selectAll, String unSelectedIds, List<Long> filteredIds) {
 
-		List<Long> mIdList = mediaGalleryResourceMapData.getMediaGalleryIds();
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
 
-		if (mIdList.isEmpty()) {
+		List<Long> mIdList = Arrays.stream(mediaGalleryIds.split(",")).map(Long::valueOf).collect(Collectors.toList());
+
+		List<Long> mapedResourceIds = null;
+
+		if (mIdList.isEmpty() || profile == null) {
 			return Collections.emptyList();
 		}
+
+		List<Long> resourceIdsList = Arrays.stream(resourceIds.split(",")).map(Long::valueOf)
+				.collect(Collectors.toList());
 
 		List<Long> unSelectedResourceIds = Arrays.stream(unSelectedIds.split(",")).map(Long::parseLong)
 				.collect(Collectors.toList());
 
-		List<Resource> resources;
-		// Check the conditions to determine how to fetch resources
-		if (Boolean.TRUE.equals(selectAll) && unSelectedResourceIds.isEmpty()) {
-			resources = resourceDao.findAll();
+		if (Boolean.FALSE.equals(selectAll)) {
+			mapedResourceIds = resourceIdsList;
+
 		} else {
-			resources = resourceDao.findAll().stream()
-					.filter(resource -> !unSelectedResourceIds.contains(resource.getId())).collect(Collectors.toList());
+
+			mapedResourceIds = filteredIds.stream().filter(id -> !unSelectedResourceIds.contains(id))
+					.collect(Collectors.toList());
 		}
 
-		if (!Boolean.TRUE.equals(selectAll)) {
-			resources = resourceDao.findByIds(mediaGalleryResourceMapData.getResourceIds(), -1, -1);
-		}
+		List<Resource> resources = resourceDao.findByIds(mapedResourceIds, -1, -1);
 
 		List<MediaGallery> mediaGalleryList = new ArrayList<>();
 
