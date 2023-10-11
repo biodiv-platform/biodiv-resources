@@ -806,14 +806,13 @@ public class ResourceServicesImpl implements ResourceServices {
 		List<Long> resourceIdsList = Arrays.stream(resourceIds.split(",")).map(Long::valueOf)
 				.collect(Collectors.toList());
 
-		List<Long> unSelectedResourceIds = Arrays.stream(unSelectedIds.split(",")).map(Long::parseLong)
-				.collect(Collectors.toList());
+		List<Long> unSelectedResourceIds = Arrays.stream(unSelectedIds.split(",")).filter(s -> !s.isEmpty())
+				.map(Long::parseLong).collect(Collectors.toList());
 
 		if (Boolean.FALSE.equals(selectAll)) {
 			mapedResourceIds = resourceIdsList;
 
 		} else {
-
 			mapedResourceIds = filteredIds.stream().filter(id -> !unSelectedResourceIds.contains(id))
 					.collect(Collectors.toList());
 		}
