@@ -4,6 +4,7 @@
 package com.strandls.resource.dao;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -69,22 +70,11 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Long> getResourceIds(List<String> contexts, List<String> types, List<Long> users, List<Long> ids) {
-		String qry = "SELECT R.id FROM Resource R WHERE 1=1";
+		String qry = "SELECT R.id FROM Resource R";
+		String filters = buildFilters(contexts, types, users, ids);
 
-		if (contexts != null && !contexts.isEmpty() && !contexts.contains("all")) {
-			qry += " AND R.context IN (:contexts)";
-		}
-
-		if (types != null && !types.isEmpty() && !types.contains("all")) {
-			qry += " AND R.type IN (:types)";
-		}
-
-		if (users != null && !users.isEmpty()) {
-			qry += " AND R.uploaderId IN (:users)";
-		}
-
-		if (ids != null) {
-			qry += " AND R.id IN (:ids)";
+		if (!filters.isEmpty()) {
+			qry += filters;
 		}
 
 		List<Long> resourceIds = null;
@@ -116,6 +106,32 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 		}
 
 		return resourceIds;
+	}
+
+	private String buildFilters(List<String> contexts, List<String> types, List<Long> users, List<Long> ids) {
+		List<String> conditions = new ArrayList<>();
+
+		if (contexts != null && !contexts.isEmpty() && !contexts.contains("all")) {
+			conditions.add("R.context IN (:contexts)");
+		}
+
+		if (types != null && !types.isEmpty() && !types.contains("all")) {
+			conditions.add("R.type IN (:types)");
+		}
+
+		if (users != null && !users.isEmpty()) {
+			conditions.add("R.uploaderId IN (:users)");
+		}
+
+		if (ids != null) {
+			conditions.add("R.id IN (:ids)");
+		}
+
+		if (!conditions.isEmpty()) {
+			return " WHERE " + String.join(" AND ", conditions);
+		} else {
+			return "";
+		}
 	}
 
 	@SuppressWarnings("unchecked")
