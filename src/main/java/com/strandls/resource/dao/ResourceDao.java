@@ -68,7 +68,6 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Long> getResourceIds(List<String> contexts, List<String> types, List<Long> users, List<Long> ids) {
 		String qry = "SELECT R.id FROM Resource R";
 		String filters = buildFilters(contexts, types, users, ids);
@@ -80,22 +79,22 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 		List<Long> resourceIds = null;
 		Session session = sessionFactory.openSession();
 		try {
-			Query<Long> query = session.createQuery(qry);
+			Query<Long> query = session.createQuery(qry, Long.class);
 
 			if (contexts != null && !contexts.isEmpty() && !contexts.contains("all")) {
-				query.setParameterList("contexts", contexts);
+				query.setParameter("contexts", contexts);
 			}
 
 			if (types != null && !types.isEmpty() && !types.contains("all")) {
-				query.setParameterList("types", types);
+				query.setParameter("types", types);
 			}
 
 			if (users != null && !users.isEmpty()) {
-				query.setParameterList("users", users);
+				query.setParameter("users", users);
 			}
 
 			if (ids != null) {
-				query.setParameterList("ids", ids);
+				query.setParameter("ids", ids);
 			}
 
 			resourceIds = query.getResultList();
