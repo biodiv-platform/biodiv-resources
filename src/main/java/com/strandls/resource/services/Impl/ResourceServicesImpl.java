@@ -5,6 +5,7 @@ package com.strandls.resource.services.Impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +37,7 @@ import com.strandls.resource.pojo.MediaGalleryCreate;
 import com.strandls.resource.pojo.MediaGalleryListPageData;
 import com.strandls.resource.pojo.MediaGalleryListTitles;
 import com.strandls.resource.pojo.MediaGalleryResource;
-import com.strandls.resource.pojo.MediaGalleryResourceMapData;
+import com.strandls.resource.pojo.MediaGalleryResourceData;
 import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.ObservationResource;
 import com.strandls.resource.pojo.Resource;
@@ -589,7 +590,8 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	@Override
 	public ResourceListData getAllResources(Integer limit, Integer offset, String contexts, String mediaTypes,
-			String tags, String users) {
+			String tags, String users, HttpServletRequest request, Boolean isBulkPosting, Boolean selectAll,
+			String unSelectedIds, String resourceIds, String mediaGalleryIds) {
 
 		List<String> mediaTypeList = Arrays.asList(mediaTypes.split(","));
 		List<String> contextList = Arrays.asList(contexts.split(","));
@@ -618,6 +620,11 @@ public class ResourceServicesImpl implements ResourceServices {
 			}
 		}
 		Long totalCount = (long) commonResourcesId.size();
+		if (Boolean.TRUE.equals(isBulkPosting)) {
+			createBulkResourceMapping(request, resourceIds, mediaGalleryIds, selectAll, unSelectedIds,
+					commonResourcesId);
+
+		}
 
 		List<ResourceData> resourceDataList = getResources(limit, offset, commonResourcesId);
 		resourceListData.setResourceDataList(resourceDataList);
@@ -783,31 +790,61 @@ public class ResourceServicesImpl implements ResourceServices {
 		return getMediaByID(mId);
 	}
 
-	@Override
-	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request,
-			MediaGalleryResourceMapData mediaGalleryResourceMapData) {
+	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request, String resourceIds,
+			String mediaGalleryIds, Boolean selectAll, String unSelectedIds, List<Long> filteredIds) {
 
-		List<Long> mIdList = mediaGalleryResourceMapData.getMediaGalleryIds();
+		CommonProfile profile = AuthUtil.getProfileFromRequest(request);
+
+		List<Long> mIdList = Arrays.stream(mediaGalleryIds.split(",")).map(Long::valueOf).collect(Collectors.toList());
+
+		List<Long> mapedResourceIds = null;
+
+		if (mIdList.isEmpty() || profile == null) {
+			return Collections.emptyList();
+		}
+
+		List<Long> resourceIdsList = Arrays.stream(resourceIds.split(",")).map(Long::valueOf)
+				.collect(Collectors.toList());
+
+		List<Long> unSelectedResourceIds = Arrays.stream(unSelectedIds.split(",")).filter(s -> !s.isEmpty())
+				.map(Long::parseLong).collect(Collectors.toList());
+
+		if (Boolean.FALSE.equals(selectAll)) {
+			mapedResourceIds = resourceIdsList;
+
+		} else {
+			mapedResourceIds = filteredIds.stream().filter(id -> !unSelectedResourceIds.contains(id))
+					.collect(Collectors.toList());
+		}
+
+		List<Resource> resources = resourceDao.findByIds(mapedResourceIds, -1, -1);
 
 		List<MediaGallery> mediaGalleryList = new ArrayList<>();
 
-		if (!mIdList.isEmpty()) {
-			List<Resource> resources = resourceDao.findByIds(mediaGalleryResourceMapData.getResourceIds(), -1, -1);
+		for (Long mId : mIdList) {
+			MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
 
-			for (Long mId : mIdList) {
-				MediaGallery mediaGallery = mediaGalleryDao.findById(mId);
+			if (mediaGallery != null) {
 
-				if (mediaGallery != null) {
-					for (Resource resource : resources) {
+				List<Long> existingResourceIds = getResourceIdsForMediaGallery(mId);
+
+				for (Resource resource : resources) {
+					if (!existingResourceIds.contains(resource.getId())) {
 						MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
 						mediaGalleryResourceDao.save(entity);
 					}
-					mediaGalleryList.add(mediaGallery);
 				}
+				mediaGalleryList.add(mediaGallery);
 			}
 		}
 
 		return mediaGalleryList;
+	}
+
+	private List<Long> getResourceIdsForMediaGallery(Long mId) {
+		return getResouceURL(Constants.MEDIAGALLERY, mId).stream()
+				.filter(resourceData -> resourceData != null && resourceData.getResource() != null)
+				.map(resourceData -> resourceData.getResource().getId()).collect(Collectors.toList());
 	}
 
 	@Override
@@ -830,6 +867,7 @@ public class ResourceServicesImpl implements ResourceServices {
 			mediaGalleryListItem.setName(mediaGallery.getName());
 			mediaGalleryListItem.setDescription(mediaGallery.getDescription());
 			mediaGalleryListItem.setLastUpdated(mediaGallery.getUpdatedOn());
+			mediaGalleryListItem.setCreatedOn(mediaGallery.getCreatedOn());
 			mediaGalleryListItem.setReprImage(getReprImage(resourcesIds));
 			mediaGalleryListItem.setTotalMedia((long) resourcesIds.size());
 
@@ -862,20 +900,50 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		Resource resource = resourceDao.findById(resourceWithTags.getId());
 
-		if (roles.contains(ROLE_ADMIN) || resource.getUploaderId().equals(userId)) {
-			resource.setDescription(resourceWithTags.getCaption());
-			resource.setContributor(resourceWithTags.getContributor());
-			resource.setRating(resourceWithTags.getRating());
-			resource.setLicenseId(resourceWithTags.getLicenseId());
-			resourceDao.update(resource);
-
+		if (!roles.contains(ROLE_ADMIN) && !resource.getUploaderId().equals(userId)) {
+			return resource;
 		}
+
+		updateResourceDetails(resource, resourceWithTags);
+
+		updateMediaGallery(resourceWithTags, resource);
 
 		TagsMappingData tagsMapping = mediaGalleryHelper.createTagsMappingData(resourceWithTags.getId(),
 				resourceWithTags.getTags());
 		mediaGalleryHelper.updateTagsMapping(request, tagsMapping);
 
 		return resource;
+	}
+
+	private void updateResourceDetails(Resource resource, ResourceWithTags resourceWithTags) {
+		resource.setDescription(resourceWithTags.getCaption());
+		resource.setContributor(resourceWithTags.getContributor());
+		resource.setRating(resourceWithTags.getRating());
+		resource.setLicenseId(resourceWithTags.getLicenseId());
+		resourceDao.update(resource);
+	}
+
+	private void updateMediaGallery(ResourceWithTags resourceWithTags, Resource resource) {
+		List<Long> newMediaGalleryIds = resourceWithTags.getmId();
+
+		List<Long> existingMediaGalleryIds = getResourceDataByID(resourceWithTags.getId()).getMediaGallery().stream()
+				.map(MediaGallery::getId).collect(Collectors.toList());
+
+		List<Long> removedIds = existingMediaGalleryIds.stream().filter(id -> !newMediaGalleryIds.contains(id))
+				.collect(Collectors.toList());
+
+		List<Long> addedIds = newMediaGalleryIds.stream().filter(id -> !existingMediaGalleryIds.contains(id))
+				.collect(Collectors.toList());
+
+		for (Long mId : addedIds) {
+			MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
+			mediaGalleryResourceDao.save(entity);
+		}
+
+		for (Long mId : removedIds) {
+			MediaGalleryResource entity = new MediaGalleryResource(mId, resource.getId());
+			mediaGalleryResourceDao.delete(entity);
+		}
 	}
 
 	@Override
@@ -905,19 +973,31 @@ public class ResourceServicesImpl implements ResourceServices {
 	}
 
 	@Override
-	public ResourceData getResourceDataByID(Long rID) {
-		ResourceData resourceData = new ResourceData();
+	public MediaGalleryResourceData getResourceDataByID(Long rID) {
 		Resource resource = resourceDao.findById(rID);
 		if (resource == null) {
 			return null;
 		}
 		try {
+			ResourceData resourceData = new ResourceData();
+			MediaGalleryResourceData mediaGalleryResourceData = new MediaGalleryResourceData();
+
 			resourceData.setResource(resource);
 			resourceData.setUserIbp(userService.getUserIbp(resource.getUploaderId().toString()));
 			resourceData.setTags(utilityServiceApi.getTags(RESOURCE, resource.getId().toString()));
 			resourceData.setLicense(licenseService.getLicenseById(resource.getLicenseId()));
+			mediaGalleryResourceData.setResourceData(resourceData);
 
-			return resourceData;
+			List<MediaGalleryResource> mediaGalleryResources = mediaGalleryResourceDao.findByResourceId(rID);
+
+			List<Long> mId = mediaGalleryResources.stream().map(MediaGalleryResource::getMediaGalleryId)
+					.collect(Collectors.toList());
+
+			List<MediaGallery> mediaGallery = mediaGalleryDao.findByIds(mId);
+
+			mediaGalleryResourceData.setMediaGallery(mediaGallery);
+
+			return mediaGalleryResourceData;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}

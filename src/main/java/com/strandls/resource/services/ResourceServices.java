@@ -11,7 +11,7 @@ import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
 import com.strandls.resource.pojo.MediaGalleryListPageData;
-import com.strandls.resource.pojo.MediaGalleryResourceMapData;
+import com.strandls.resource.pojo.MediaGalleryResourceData;
 import com.strandls.resource.pojo.MediaGalleryShow;
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.pojo.ResourceCropInfo;
@@ -63,7 +63,8 @@ public interface ResourceServices {
 	public MediaGalleryShow createMedia(HttpServletRequest request, MediaGalleryCreate mediaGalleryCreate);
 
 	public ResourceListData getAllResources(Integer limit, Integer offset, String context, String mediaTypes,
-			String tags, String users);
+			String tags, String users, HttpServletRequest request, Boolean isBulkPosting, Boolean selectAll,
+			String unSelectedIds, String resourceIds, String mediaGalleryIds);
 
 	public String deleteMediaByID(HttpServletRequest request, Long mId);
 
@@ -72,9 +73,6 @@ public interface ResourceServices {
 
 	public MediaGalleryShow updateMediaGalleryByID(HttpServletRequest request, Long mediaGalleryId,
 			MediaGalleryCreate mediaGallery);
-
-	public List<MediaGallery> createBulkResourceMapping(HttpServletRequest request,
-			MediaGalleryResourceMapData mediaGalleryResourceMapData);
 
 	public List<MediaGallery> getAllMediaGallery();
 
@@ -86,6 +84,6 @@ public interface ResourceServices {
 
 	public String deleteResourceByID(HttpServletRequest request, Long rId);
 
-	public ResourceData getResourceDataByID(Long rID);
+	public MediaGalleryResourceData getResourceDataByID(Long rID);
 
 }

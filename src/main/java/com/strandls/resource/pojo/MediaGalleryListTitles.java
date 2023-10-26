@@ -15,6 +15,7 @@ public class MediaGalleryListTitles {
 	private String description;
 	private String reprImage;
 	private Date lastUpdated;
+	private Date createdOn;
 	private Long totalMedia;
 
 	/**
@@ -30,17 +31,19 @@ public class MediaGalleryListTitles {
 	 * @param description
 	 * @param reprImage
 	 * @param lastUpdated
+	 * @param createdOn
 	 * @param totalMedia
 	 */
 
 	public MediaGalleryListTitles(Long id, String name, String description, String reprImage, Date lastUpdated,
-			Long totalMedia) {
+			Date createdOn, Long totalMedia) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.reprImage = reprImage;
 		this.lastUpdated = lastUpdated;
+		this.createdOn = createdOn;
 		this.totalMedia = totalMedia;
 	}
 
@@ -82,6 +85,14 @@ public class MediaGalleryListTitles {
 
 	public void setLastUpdated(Date lastUpdated) {
 		this.lastUpdated = lastUpdated;
+	}
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
 	}
 
 	public Long getTotalMedia() {
