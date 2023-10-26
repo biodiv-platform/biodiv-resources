@@ -4,7 +4,6 @@
 package com.strandls.resource.dao;
 
 import java.util.List;
-import java.util.ArrayList;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -68,33 +67,45 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Long> getResourceIds(List<String> contexts, List<String> types, List<Long> users, List<Long> ids) {
-		String qry = "SELECT R.id FROM Resource R";
-		String filters = buildFilters(contexts, types, users, ids);
+		String qry = "SELECT R.id FROM Resource R WHERE 1=1";
 
-		if (!filters.isEmpty()) {
-			qry += filters;
+		if (contexts != null && !contexts.isEmpty() && !contexts.contains("all")) {
+			qry += " AND R.context IN (:contexts)";
+		}
+
+		if (types != null && !types.isEmpty() && !types.contains("all")) {
+			qry += " AND R.type IN (:types)";
+		}
+
+		if (users != null && !users.isEmpty()) {
+			qry += " AND R.uploaderId IN (:users)";
+		}
+
+		if (ids != null) {
+			qry += " AND R.id IN (:ids)";
 		}
 
 		List<Long> resourceIds = null;
 		Session session = sessionFactory.openSession();
 		try {
-			Query<Long> query = session.createQuery(qry, Long.class);
+			Query<Long> query = session.createQuery(qry);
 
 			if (contexts != null && !contexts.isEmpty() && !contexts.contains("all")) {
-				query.setParameter("contexts", contexts);
+				query.setParameterList("contexts", contexts);
 			}
 
 			if (types != null && !types.isEmpty() && !types.contains("all")) {
-				query.setParameter("types", types);
+				query.setParameterList("types", types);
 			}
 
 			if (users != null && !users.isEmpty()) {
-				query.setParameter("users", users);
+				query.setParameterList("users", users);
 			}
 
 			if (ids != null) {
-				query.setParameter("ids", ids);
+				query.setParameterList("ids", ids);
 			}
 
 			resourceIds = query.getResultList();
@@ -105,32 +116,6 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 		}
 
 		return resourceIds;
-	}
-
-	private String buildFilters(List<String> contexts, List<String> types, List<Long> users, List<Long> ids) {
-		List<String> conditions = new ArrayList<>();
-
-		if (contexts != null && !contexts.isEmpty() && !contexts.contains("all")) {
-			conditions.add("R.context IN (:contexts)");
-		}
-
-		if (types != null && !types.isEmpty() && !types.contains("all")) {
-			conditions.add("R.type IN (:types)");
-		}
-
-		if (users != null && !users.isEmpty()) {
-			conditions.add("R.uploaderId IN (:users)");
-		}
-
-		if (ids != null) {
-			conditions.add("R.id IN (:ids)");
-		}
-
-		if (!conditions.isEmpty()) {
-			return " WHERE " + String.join(" AND ", conditions);
-		} else {
-			return "";
-		}
 	}
 
 	@SuppressWarnings("unchecked")
