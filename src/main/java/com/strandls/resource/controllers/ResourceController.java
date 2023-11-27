@@ -652,8 +652,18 @@ public class ResourceController {
 		}
 		String hAccept = request.getHeader(HttpHeaders.ACCEPT);
 		boolean preserveFormat = Boolean.parseBoolean(presereve);
-		String userRequestedFormat = hAccept.contains("webp") && format.equalsIgnoreCase("webp") ? "webp"
-				: !format.equalsIgnoreCase("webp") ? format : "jpg";
+
+		boolean isWebpRequested = hAccept.contains("webp") && format.equalsIgnoreCase("webp");
+		boolean isFormatNotWebp = !format.equalsIgnoreCase("webp");
+		String userRequestedFormat;
+		if (isWebpRequested && format.equalsIgnoreCase("webp")) {
+			userRequestedFormat = "webp";
+		} else if (isFormatNotWebp) {
+			userRequestedFormat = format;
+		} else {
+			userRequestedFormat = "jpg";
+		}
+
 		return service.getImage(request, directory, fileName, width, height, userRequestedFormat, fit, preserveFormat);
 	}
 

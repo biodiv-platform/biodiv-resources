@@ -10,8 +10,12 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.CriteriaSpecification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractDAO<T, K extends Serializable> {
+
+	private static final Logger logger = LoggerFactory.getLogger(AbstractDAO.class);
 
 	protected SessionFactory sessionFactory;
 
@@ -134,6 +138,8 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 		try {
 			entity = (T) query.getSingleResult();
 		} catch (NoResultException e) {
+			String errorMessage = String.format("No result found for the query: %s", propertyQuery);
+			logger.error(errorMessage);
 			throw e;
 		}
 		session.close();

@@ -181,7 +181,7 @@ public class ResourceUtil {
 		Process p = null;
 		boolean output = false;
 		try {
-			if (!PREVENTIVE_TOKENS.stream().filter(symbol -> command.contains(symbol)).findAny().isPresent()) {
+			if (PREVENTIVE_TOKENS.stream().noneMatch(command::contains)) {
 				String[] commands = { "/bin/sh", "-c", command };
 				p = Runtime.getRuntime().exec(commands);
 				output = p.waitFor(5, TimeUnit.SECONDS);
@@ -192,8 +192,6 @@ public class ResourceUtil {
 		} catch (Exception ex) {
 			logger.error(ex.getMessage());
 		}
-		;
-
 		return output;
 	}
 
@@ -234,8 +232,7 @@ public class ResourceUtil {
 		if (index != -1) {
 			directory = "/" + directory.substring(index + 2);
 		}
-		String filepath = directory + '/' + fileName;
-		return filepath;
+		return directory + '/' + fileName;
 	}
 
 	public static String determineContentType(boolean preserve, String format, String detactedContentType) {
