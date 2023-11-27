@@ -5,8 +5,6 @@ package com.strandls.resource.services.Impl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,7 +12,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.strandls.authentication_utility.util.AuthUtil;
+import com.strandls.authentication_utility.util.PropertyFileUtil;
 import com.strandls.resource.dao.LicenseDao;
 import com.strandls.resource.dao.MediaGalleryDao;
 import com.strandls.resource.dao.MediaGalleryResourceDao;
@@ -133,20 +131,7 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	private static final String RESOURCE = "resource";
 
-	String storageBasePath = null;
-
-	public ResourceServicesImpl() {
-		InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
-
-		Properties properties = new Properties();
-		try {
-			properties.load(in);
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
-
-		storageBasePath = properties.getProperty("storage_dir", "/home/apps/biodiv-image");
-	}
+	private String storageBasePath = PropertyFileUtil.fetchProperty("config.properties", "storage_dir");
 
 	@Override
 	public List<ResourceData> getResouceURL(String objectType, Long objectId) {
