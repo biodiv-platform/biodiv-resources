@@ -3,6 +3,7 @@ package com.strandls.resource.util;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
+import javax.persistence.NoResultException;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -15,6 +16,16 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 	protected SessionFactory sessionFactory;
 
 	protected Class<? extends T> daoType;
+
+	private String propertyQuery = "FROM TABLENAME t WHERE t.PROPERTY CONDITION :VALUE";
+
+	private String tableNameConstant = "TABLENAME";
+
+	private String propertyConstant = "PROPERTY";
+
+	private String conditionConstant = "CONDITION";
+
+	private String valueConstant = "VALUE";
 
 	@SuppressWarnings("unchecked")
 	protected AbstractDAO(SessionFactory sessionFactory) {
@@ -106,6 +117,28 @@ public abstract class AbstractDAO<T, K extends Serializable> {
 		}
 
 		return entities;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public T findByPropertyWithCondition(String property, Object value, String condition) {
+
+		propertyQuery = propertyQuery.replace(tableNameConstant, daoType.getSimpleName());
+		propertyQuery = propertyQuery.replace(propertyConstant, property);
+		propertyQuery = propertyQuery.replace(conditionConstant, condition);
+
+		Session session = sessionFactory.openSession();
+		org.hibernate.query.Query query = session.createQuery(propertyQuery);
+		query.setParameter(valueConstant, value);
+
+		T entity = null;
+		try {
+			entity = (T) query.getSingleResult();
+		} catch (NoResultException e) {
+			throw e;
+		}
+		session.close();
+		return entity;
+
 	}
 
 }

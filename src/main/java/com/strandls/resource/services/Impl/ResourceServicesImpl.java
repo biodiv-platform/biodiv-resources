@@ -3,6 +3,10 @@
  */
 package com.strandls.resource.services.Impl;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,12 +14,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
@@ -55,6 +62,8 @@ import com.strandls.resource.pojo.UFileCreateData;
 import com.strandls.resource.services.LicenseServices;
 import com.strandls.resource.services.ResourceServices;
 import com.strandls.resource.util.Constants;
+import com.strandls.resource.util.ResourceUtil;
+import com.strandls.resource.util.ResourceUtil.BASE_FOLDERS;
 import com.strandls.user.ApiException;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.UserIbp;
@@ -63,6 +72,8 @@ import com.strandls.utility.pojo.Tags;
 import com.strandls.utility.pojo.TagsMappingData;
 
 import net.minidev.json.JSONArray;
+
+import org.apache.tika.Tika;
 
 /**
  * @author Abhishek Rudra
@@ -121,6 +132,21 @@ public class ResourceServicesImpl implements ResourceServices {
 	private static final String ROLE_ADMIN = "ROLE_ADMIN";
 
 	private static final String RESOURCE = "resource";
+
+	String storageBasePath = null;
+
+	public ResourceServicesImpl() {
+		InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
+
+		Properties properties = new Properties();
+		try {
+			properties.load(in);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+
+		storageBasePath = properties.getProperty("storage_dir", "/home/apps/biodiv-image");
+	}
 
 	@Override
 	public List<ResourceData> getResouceURL(String objectType, Long objectId) {
@@ -1003,6 +1029,78 @@ public class ResourceServicesImpl implements ResourceServices {
 		}
 
 		return null;
+	}
+
+	public static String generateFilePath(String directory, String fileName) {
+		int index = directory.indexOf("//");
+		if (index != -1) {
+			directory = "/" + directory.substring(index + 2);
+		}
+		String filepath = directory + '/' + fileName;
+		return filepath;
+	}
+
+	@Override
+	public Response getImage(HttpServletRequest request, String directory, String fileName, Integer width,
+			Integer height, String format, String fit, boolean preserve) {
+		try {
+
+			String dirPath = storageBasePath + File.separatorChar + directory + File.separatorChar;
+			String fileLocation = dirPath + fileName;
+			File file = ResourceUtil.findFile(fileLocation);
+			String filepath = ResourceUtil.generateFilePath(directory, fileName);
+
+			Resource resource = resourceDao.findByPropertyWithCondition("fileName", filepath, "=");
+			UserIbp userIbp = userService.getUserIbp(resource.getUploaderId().toString());
+			String watermark = "";
+
+			if (resource.getId() != null) {
+				watermark = resource.getContributor() != null ? resource.getContributor() : userIbp.getName();
+			}
+
+			if (file == null) {
+				return Response.status(Status.NOT_FOUND).entity("File not found").build();
+			}
+
+			String name = file.getName();
+			String extension = name.substring(name.indexOf(".") + 1);
+			String thumbnailFolder = storageBasePath + File.separatorChar + BASE_FOLDERS.WATERMARK_IMAGES.getFolder()
+					+ file.getParentFile().getAbsolutePath().substring(storageBasePath.length());
+
+			String command = null;
+			command = ResourceUtil.generateWatermarkCommand(file.getAbsolutePath(), thumbnailFolder, width, height,
+					preserve ? extension : format, null, fit, watermark);
+
+			File resizedFile = getResizedFile(command, thumbnailFolder, file);
+
+			Tika tika = new Tika();
+			String detactedContentType = tika.detect(resizedFile.getName());
+			String contentType = ResourceUtil.determineContentType(preserve, format, detactedContentType);
+
+			return ResourceUtil.fromFileToStream(resizedFile, contentType);
+		} catch (FileNotFoundException fe) {
+			logger.error(fe.getMessage());
+			return Response.status(Status.NOT_FOUND).build();
+		} catch (Exception ex) {
+			logger.error(ex.getMessage());
+			return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	private File getResizedFile(String command, String thumbnailFolder, File file) {
+		File thumbnailFile = ResourceUtil.getResizedImage(command);
+
+		File resizedFile;
+		if (!thumbnailFile.exists()) {
+			File folders = new File(thumbnailFolder);
+			folders.mkdirs();
+			boolean fileGenerated = ResourceUtil.generateFile(command);
+			resizedFile = fileGenerated ? ResourceUtil.getResizedImage(command) : new File(file.toURI());
+
+		} else {
+			resizedFile = thumbnailFile;
+		}
+		return resizedFile;
 	}
 
 }

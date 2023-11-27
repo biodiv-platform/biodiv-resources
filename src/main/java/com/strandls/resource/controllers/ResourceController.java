@@ -3,6 +3,9 @@
  */
 package com.strandls.resource.controllers;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -21,6 +24,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.StreamingOutput;
 
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.resource.ApiConstants;
@@ -627,6 +632,29 @@ public class ResourceController {
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
+	}
+
+	@Path("image/{directory:.+}/{fileName}")
+	@GET
+	@Consumes(MediaType.TEXT_PLAIN)
+	@ApiOperation(value = "Get the image resource with custom height & width by url", response = StreamingOutput.class)
+	public Response getImage(@Context HttpServletRequest request, @PathParam("directory") String directory,
+			@PathParam("fileName") String fileName, @QueryParam("w") Integer width, @QueryParam("h") Integer height,
+			@DefaultValue("webp") @QueryParam("fm") String format, @DefaultValue("") @QueryParam("fit") String fit,
+			@DefaultValue("false") @QueryParam("preserve") String presereve) throws UnsupportedEncodingException {
+		fileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8.name());
+
+		if (directory.contains("..") || fileName.contains("..")) {
+			return Response.status(Status.NOT_ACCEPTABLE).build();
+		}
+		if (directory.isEmpty() || fileName.isEmpty()) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+		String hAccept = request.getHeader(HttpHeaders.ACCEPT);
+		boolean preserveFormat = Boolean.parseBoolean(presereve);
+		String userRequestedFormat = hAccept.contains("webp") && format.equalsIgnoreCase("webp") ? "webp"
+				: !format.equalsIgnoreCase("webp") ? format : "jpg";
+		return service.getImage(request, directory, fileName, width, height, userRequestedFormat, fit, preserveFormat);
 	}
 
 }
