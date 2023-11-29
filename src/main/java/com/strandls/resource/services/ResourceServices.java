@@ -87,7 +87,7 @@ public interface ResourceServices {
 
 	public MediaGalleryResourceData getResourceDataByID(Long rID);
 
-	public Response getImage(HttpServletRequest request, String directory, String fileName, Integer width,
-			Integer height, String userRequestedFormat, String fit, boolean preserveFormat);
+	public Response getImage(HttpServletRequest request, Long resourceId, Integer width, Integer height,
+			String userRequestedFormat, String fit, boolean preserveFormat);
 
 }

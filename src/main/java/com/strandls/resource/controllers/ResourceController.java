@@ -634,28 +634,22 @@ public class ResourceController {
 		}
 	}
 
-	@Path("image/{directory:.+}/{fileName}")
 	@GET
+	@Path(ApiConstants.IMAGE + "/{rId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@ApiOperation(value = "Get the image resource with custom height & width by url", response = StreamingOutput.class)
-	public Response getImage(@Context HttpServletRequest request, @PathParam("directory") String directory,
-			@PathParam("fileName") String fileName, @QueryParam("w") Integer width, @QueryParam("h") Integer height,
+	public Response getImage(@Context HttpServletRequest request, @PathParam("rId") String resourceId,
+			@QueryParam("w") Integer width, @QueryParam("h") Integer height,
 			@DefaultValue("webp") @QueryParam("fm") String format, @DefaultValue("") @QueryParam("fit") String fit,
 			@DefaultValue("false") @QueryParam("preserve") String presereve) throws UnsupportedEncodingException {
-		fileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8.name());
 
-		if (directory.contains("..") || fileName.contains("..")) {
-			return Response.status(Status.NOT_ACCEPTABLE).build();
-		}
-		if (directory.isEmpty() || fileName.isEmpty()) {
-			return Response.status(Status.BAD_REQUEST).build();
-		}
+		Long rId = Long.parseLong(resourceId);
 		String hAccept = request.getHeader(HttpHeaders.ACCEPT);
 		boolean preserveFormat = Boolean.parseBoolean(presereve);
-
 		boolean isWebpRequested = hAccept.contains("webp") && format.equalsIgnoreCase("webp");
 		boolean isFormatNotWebp = !format.equalsIgnoreCase("webp");
 		String userRequestedFormat;
+
 		if (isWebpRequested && format.equalsIgnoreCase("webp")) {
 			userRequestedFormat = "webp";
 		} else if (isFormatNotWebp) {
@@ -664,7 +658,7 @@ public class ResourceController {
 			userRequestedFormat = "jpg";
 		}
 
-		return service.getImage(request, directory, fileName, width, height, userRequestedFormat, fit, preserveFormat);
+		return service.getImage(request, rId, width, height, userRequestedFormat, fit, preserveFormat);
 	}
 
 }

@@ -40,5 +40,6 @@ public class ApiConstants {
 	public static final String DELETE = "/delete";
 	public static final String BULKRESOURCEMAPPING = "/bulkResourceMapping";
 	public static final String EDITPAGE = "/editPage";
+	public static final String IMAGE = "/image";
 
 }

@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.WebApplicationException;
@@ -19,8 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ResourceUtil {
-
-	private static final int QUALITY = 60;
 
 	private static final List<String> PREVENTIVE_TOKENS = Arrays.asList("&", "|", "`", "$", ";");
 
@@ -35,7 +35,7 @@ public class ResourceUtil {
 		TEMP("temp"), DATATABLES(String.join(String.valueOf(File.separatorChar), CONTENT, "dataTables")),
 		DATASETS(String.join(String.valueOf(File.separatorChar), CONTENT, "datasets")),
 		CURATION(String.join(String.valueOf(File.separatorChar), CONTENT, "curation")), HOME_PAGE("homePage"),
-		RESOURCES("resources"), WATERMARK_IMAGES("watermarkImages");
+		RESOURCES("resources");
 
 		private String folder;
 
@@ -92,48 +92,71 @@ public class ResourceUtil {
 		}
 	}
 
-	public static String generateWatermarkCommand(String filePath, String outputFilePath, Integer w, Integer h,
+	public static String generateImageCommand(String filePath, String outputFilePath, Integer w, Integer h,
 			String preserveFormat, Integer quality, String fit, String watermark) {
 		List<String> commands = new ArrayList<>();
 		StringBuilder command = new StringBuilder();
-		String fileName = filePath.substring(0, filePath.lastIndexOf("."));
-		String fileNameWithoutPrefix = fileName.substring(fileName.lastIndexOf(File.separatorChar));
-		String finalFilePath = outputFilePath + fileNameWithoutPrefix + "_" + watermark + "-mod";
+		String fileName = getFileName(filePath);
+		String finalFilePath = getFinalFilePath(outputFilePath, fileName, watermark);
+
 		command.append("convert").append(" ");
+		appendFilePath(command, filePath);
+		appendResizeOptions(command, w, h, fit);
+		appendWatermark(command, watermark, w, h);
+		appendQualityAndOutput(command, quality, finalFilePath, w, h, fit, preserveFormat);
+
+		commands.add(command.toString());
+		return String.join(" ", commands).trim();
+	}
+
+	private static String getFileName(String filePath) {
+		String fileName = filePath.substring(0, filePath.lastIndexOf("."));
+		return fileName.substring(fileName.lastIndexOf(File.separatorChar));
+	}
+
+	private static void appendFilePath(StringBuilder command, String filePath) {
 		if (filePath.contains(" ")) {
 			command.append("'").append(filePath).append("'");
 		} else {
 			command.append(filePath);
 		}
+	}
+
+	private static void appendResizeOptions(StringBuilder command, Integer w, Integer h, String fit) {
 		if (w != null || h != null) {
 			command.append(" ").append("-auto-orient").append(" ").append("-resize").append(" ");
+			if (h != null && w != null && fit.equalsIgnoreCase("center")) {
+				command.append(w).append("x").append(h).append("^");
+				command.append(" ").append("-gravity").append(" ").append("center").append(" ").append("-extent")
+						.append(" ");
+				command.append(w).append("x").append(h).append(" ");
+			} else {
+				if (h != null && w != null) {
+					command.append(w).append("x").append(h).append("!");
+				} else if (h != null) {
+					command.append("x").append(h);
+				} else {
+					command.append(w);
+				}
+			}
 		} else {
 			command.append(" ").append("-auto-orient").append(" ").append(" ");
 		}
+	}
 
-		if (h != null && w != null && fit.equalsIgnoreCase("center")) {
-			command.append(w).append("x").append(h).append("^");
-			command.append(" ").append("-gravity").append(" ").append("center").append(" ").append("-extent")
-					.append(" ");
-			command.append(w).append("x").append(h).append(" ");
-		} else if (h != null && w != null) {
-			command.append(w).append("x").append(h).append("!");
-		} else if (h != null) {
-			command.append("x").append(h);
-		} else if (w != null) {
-			command.append(w);
-		}
-		if (watermark != null) {
+	private static void appendWatermark(StringBuilder command, String watermark, Integer w, Integer h) {
+		if (watermark != null && !"".equals(watermark)) {
 			int calculatedPointSize = calculatePointSizeBasedOnDimensions(w, h);
 			command.append(" ").append("-gravity").append(" ").append("SouthEast").append(" ").append("-fill")
 					.append(" ").append("white").append(" ").append("-pointsize").append(" ")
 					.append(calculatedPointSize).append(" ").append("-annotate").append(" ").append("+10+10")
 					.append(" ").append("'").append(watermark).append("'");
 		}
-		command.append(" ");
-		command.append("-quality").append(" ").append(quality == null ? QUALITY : quality);
-		command.append(" ");
+	}
 
+	private static void appendQualityAndOutput(StringBuilder command, Integer quality, String finalFilePath, Integer w,
+			Integer h, String fit, String preserveFormat) {
+		command.append(" ").append("-quality").append(" ").append(quality).append(" ");
 		if (w != null || h != null) {
 			if (finalFilePath.contains(" ")) {
 				command.append("'").append(finalFilePath).append("_").append(w).append("x").append(h).append("_")
@@ -147,12 +170,14 @@ public class ResourceUtil {
 				command.append("'").append(finalFilePath).append("_").append(fit).append(".").append(preserveFormat)
 						.append("'");
 			} else {
-				command.append(finalFilePath).append("_").append(fit).append(".").append(preserveFormat);
+				command.append(finalFilePath).append(".").append(preserveFormat);
 			}
 		}
+	}
 
-		commands.add(command.toString());
-		return String.join(" ", commands).trim();
+	private static String getFinalFilePath(String outputFilePath, String fileName, String watermark) {
+		String suffix = (watermark != null) ? "-" + watermark + "-mod" : "-mod";
+		return outputFilePath + fileName + suffix;
 	}
 
 	public static boolean generateFile(String command) {
@@ -165,11 +190,11 @@ public class ResourceUtil {
 		return isFileGenerated;
 	}
 
-	public static File getResizedImage(String command) {
+	public static File getResizedImage(String command, int imageQuality) {
 		File resizedImage = null;
 		try {
 			command = command.replace("'", "");
-			String delimiter = "-quality " + QUALITY;
+			String delimiter = "-quality " + imageQuality;
 			resizedImage = new File(command.substring(command.indexOf(delimiter) + delimiter.length()).trim());
 		} catch (Exception ex) {
 			logger.error(ex.getMessage());
@@ -227,14 +252,6 @@ public class ResourceUtil {
 		}
 	}
 
-	public static String generateFilePath(String directory, String fileName) {
-		int index = directory.indexOf("//");
-		if (index != -1) {
-			directory = "/" + directory.substring(index + 2);
-		}
-		return directory + '/' + fileName;
-	}
-
 	public static String determineContentType(boolean preserve, String format, String detactedContentType) {
 		String contentType;
 		if (preserve) {
@@ -247,6 +264,26 @@ public class ResourceUtil {
 			}
 		}
 		return contentType;
+	}
+
+	public static Map<String, String> getResourceContextMap() {
+		Map<String, String> resourceCtxMap = new HashMap<>();
+		resourceCtxMap.put("MY_UPLOADS", "myUploads");
+		resourceCtxMap.put("OBSERVATION", "observations");
+		resourceCtxMap.put("PAGES", "pages");
+		resourceCtxMap.put("SPECIES_FIELD", "img");
+		resourceCtxMap.put("SPECIES", "img");
+		resourceCtxMap.put("USERGROUPS", "userGroups");
+		resourceCtxMap.put("RESOURCE", "resources");
+		return resourceCtxMap;
+	}
+
+	public static String folderPrefix(String context) {
+		Map<String, String> javaResourceCtxMap = getResourceContextMap();
+		if (javaResourceCtxMap.containsKey(context)) {
+			context = "/" + javaResourceCtxMap.get(context) + "/";
+		}
+		return context;
 	}
 
 }

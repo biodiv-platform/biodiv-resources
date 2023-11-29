@@ -5,6 +5,8 @@ package com.strandls.resource.services.Impl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -131,7 +133,11 @@ public class ResourceServicesImpl implements ResourceServices {
 
 	private static final String RESOURCE = "resource";
 
-	private String storageBasePath = PropertyFileUtil.fetchProperty("config.properties", "storage_dir");
+	private static final String CONFIG_PROPERTIES = "config.properties";
+
+	private String storageBasePath = PropertyFileUtil.fetchProperty(CONFIG_PROPERTIES, "storage_dir");
+	private String imageQuality = PropertyFileUtil.fetchProperty(CONFIG_PROPERTIES, "imageQuality");
+	private String waterMarked = PropertyFileUtil.fetchProperty(CONFIG_PROPERTIES, "waterMarked");
 
 	@Override
 	public List<ResourceData> getResouceURL(String objectType, Long objectId) {
@@ -1026,20 +1032,30 @@ public class ResourceServicesImpl implements ResourceServices {
 	}
 
 	@Override
-	public Response getImage(HttpServletRequest request, String directory, String fileName, Integer width,
-			Integer height, String format, String fit, boolean preserve) {
+	public Response getImage(HttpServletRequest request, Long resourceId, Integer width, Integer height, String format,
+			String fit, boolean preserve) {
 		try {
 
+			Resource resource = resourceDao.findById(resourceId);
+			if (resource == null) {
+				return Response.status(Status.NOT_FOUND).entity("Resource not found").build();
+			}
+			if (!"IMAGE".equals(resource.getType())) {
+				return Response.status(Status.NOT_FOUND).entity("Resource dont have an image").build();
+			}
+
+			String prefix = ResourceUtil.folderPrefix(resource.getContext());
+			Path path = Paths.get(prefix + resource.getFileName());
+			String directory = path.getParent().toString();
+			String fileName = path.getFileName().toString();
 			String dirPath = storageBasePath + File.separatorChar + directory + File.separatorChar;
+
 			String fileLocation = dirPath + fileName;
 			File file = ResourceUtil.findFile(fileLocation);
-			String filepath = ResourceUtil.generateFilePath(directory, fileName);
 
-			Resource resource = resourceDao.findByPropertyWithCondition("fileName", filepath, "=");
 			UserIbp userIbp = userService.getUserIbp(resource.getUploaderId().toString());
 			String watermark = "";
-
-			if (resource.getId() != null) {
+			if (Boolean.TRUE.equals(Boolean.parseBoolean(waterMarked))) {
 				watermark = resource.getContributor() != null ? resource.getContributor() : userIbp.getName();
 			}
 
@@ -1049,15 +1065,14 @@ public class ResourceServicesImpl implements ResourceServices {
 
 			String name = file.getName();
 			String extension = name.substring(name.indexOf(".") + 1);
-			String thumbnailFolder = storageBasePath + File.separatorChar + BASE_FOLDERS.WATERMARK_IMAGES.getFolder()
+			String thumbnailFolder = storageBasePath + File.separatorChar + BASE_FOLDERS.THUMBNAILS.getFolder()
 					+ file.getParentFile().getAbsolutePath().substring(storageBasePath.length());
 
 			String command = null;
-			command = ResourceUtil.generateWatermarkCommand(file.getAbsolutePath(), thumbnailFolder, width, height,
-					preserve ? extension : format, null, fit, watermark);
+			command = ResourceUtil.generateImageCommand(file.getAbsolutePath(), thumbnailFolder, width, height,
+					preserve ? extension : format, Integer.parseInt(imageQuality), fit, watermark);
 
-			File resizedFile = getResizedFile(command, thumbnailFolder, file);
-
+			File resizedFile = getResizedFile(command, thumbnailFolder, file, Integer.parseInt(imageQuality));
 			Tika tika = new Tika();
 			String detactedContentType = tika.detect(resizedFile.getName());
 			String contentType = ResourceUtil.determineContentType(preserve, format, detactedContentType);
@@ -1072,15 +1087,15 @@ public class ResourceServicesImpl implements ResourceServices {
 		}
 	}
 
-	private File getResizedFile(String command, String thumbnailFolder, File file) {
-		File thumbnailFile = ResourceUtil.getResizedImage(command);
+	private File getResizedFile(String command, String thumbnailFolder, File file, int imageQuality) {
+		File thumbnailFile = ResourceUtil.getResizedImage(command, imageQuality);
 
 		File resizedFile;
 		if (!thumbnailFile.exists()) {
 			File folders = new File(thumbnailFolder);
 			folders.mkdirs();
 			boolean fileGenerated = ResourceUtil.generateFile(command);
-			resizedFile = fileGenerated ? ResourceUtil.getResizedImage(command) : new File(file.toURI());
+			resizedFile = fileGenerated ? ResourceUtil.getResizedImage(command, imageQuality) : new File(file.toURI());
 
 		} else {
 			resizedFile = thumbnailFile;
