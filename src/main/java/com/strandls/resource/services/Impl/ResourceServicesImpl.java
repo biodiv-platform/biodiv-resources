@@ -895,13 +895,13 @@ public class ResourceServicesImpl implements ResourceServices {
 		return new MediaGalleryListPageData(mediaGalleryDao.getTotalMediaGalleryCount(), mediaGalleryListTitles);
 	}
 
-	public String getReprImage(List<Long> resourcesIds) {
+	public Long getReprImage(List<Long> resourcesIds) {
 
 		List<Resource> resources = resourceDao.findByIds(resourcesIds, -1, -1);
 
 		for (Resource resource : resources) {
 			if (resource.getType() != null && resource.getType().equals("IMAGE")) {
-				return resource.getFileName();
+				return resource.getId();
 			}
 		}
 
