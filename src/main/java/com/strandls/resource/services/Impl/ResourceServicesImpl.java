@@ -1064,7 +1064,7 @@ public class ResourceServicesImpl implements ResourceServices {
 			}
 
 			String name = file.getName();
-			String extension = name.substring(name.indexOf(".") + 1);
+			String extension = name.substring(name.lastIndexOf(".") + 1);
 			String thumbnailFolder = storageBasePath + File.separatorChar + BASE_FOLDERS.THUMBNAILS.getFolder()
 					+ file.getParentFile().getAbsolutePath().substring(storageBasePath.length());
 

@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -27,6 +28,8 @@ public class ResourceUtil {
 	private static final Logger logger = LoggerFactory.getLogger(ResourceUtil.class);
 
 	private static final String CONTENT = "content";
+
+	private static final Map<String, String> RESOURCE_CTX_MAP = initializeResourceContextMap();
 
 	public enum BASE_FOLDERS {
 		OBSERVATIONS("observations"), IMG("img"), SPECIES("species"), USER_GROUPS("userGroups"), USERS("users"),
@@ -78,8 +81,7 @@ public class ResourceUtil {
 		return expectedFile;
 	}
 
-	private static int calculatePointSizeBasedOnDimensions(Integer width, Integer height) {
-		double percentage = 0.05;
+	private static int calculatePointSizeBasedOnDimensions(Integer width, Integer height, double percentage) {
 		if (width != null && height != null) {
 			int minDimension = Math.min(width, height);
 			return (int) (minDimension * percentage);
@@ -146,7 +148,8 @@ public class ResourceUtil {
 
 	private static void appendWatermark(StringBuilder command, String watermark, Integer w, Integer h) {
 		if (watermark != null && !"".equals(watermark)) {
-			int calculatedPointSize = calculatePointSizeBasedOnDimensions(w, h);
+			double percentage = 0.05;
+			int calculatedPointSize = calculatePointSizeBasedOnDimensions(w, h, percentage);
 			command.append(" ").append("-gravity").append(" ").append("SouthEast").append(" ").append("-fill")
 					.append(" ").append("white").append(" ").append("-pointsize").append(" ")
 					.append(calculatedPointSize).append(" ").append("-annotate").append(" ").append("+10+10")
@@ -266,7 +269,7 @@ public class ResourceUtil {
 		return contentType;
 	}
 
-	public static Map<String, String> getResourceContextMap() {
+	private static Map<String, String> initializeResourceContextMap() {
 		Map<String, String> resourceCtxMap = new HashMap<>();
 		resourceCtxMap.put("MY_UPLOADS", "myUploads");
 		resourceCtxMap.put("OBSERVATION", "observations");
@@ -275,13 +278,12 @@ public class ResourceUtil {
 		resourceCtxMap.put("SPECIES", "img");
 		resourceCtxMap.put("USERGROUPS", "userGroups");
 		resourceCtxMap.put("RESOURCE", "resources");
-		return resourceCtxMap;
+		return Collections.unmodifiableMap(resourceCtxMap);
 	}
 
 	public static String folderPrefix(String context) {
-		Map<String, String> javaResourceCtxMap = getResourceContextMap();
-		if (javaResourceCtxMap.containsKey(context)) {
-			context = "/" + javaResourceCtxMap.get(context) + "/";
+		if (RESOURCE_CTX_MAP.containsKey(context)) {
+			context = "/" + RESOURCE_CTX_MAP.get(context) + "/";
 		}
 		return context;
 	}
