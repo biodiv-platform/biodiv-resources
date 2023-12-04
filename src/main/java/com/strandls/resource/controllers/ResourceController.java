@@ -3,6 +3,9 @@
  */
 package com.strandls.resource.controllers;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -21,6 +24,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.StreamingOutput;
 
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.resource.ApiConstants;
@@ -627,6 +632,33 @@ public class ResourceController {
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
+	}
+
+	@GET
+	@Path(ApiConstants.IMAGE + "/{rId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@ApiOperation(value = "Get the image resource with custom height & width by url", response = StreamingOutput.class)
+	public Response getImage(@Context HttpServletRequest request, @PathParam("rId") String resourceId,
+			@QueryParam("w") Integer width, @QueryParam("h") Integer height,
+			@DefaultValue("webp") @QueryParam("fm") String format, @DefaultValue("") @QueryParam("fit") String fit,
+			@DefaultValue("false") @QueryParam("preserve") String presereve) throws UnsupportedEncodingException {
+
+		Long rId = Long.parseLong(resourceId);
+		String hAccept = request.getHeader(HttpHeaders.ACCEPT);
+		boolean preserveFormat = Boolean.parseBoolean(presereve);
+		boolean isWebpRequested = hAccept.contains("webp") && format.equalsIgnoreCase("webp");
+		boolean isFormatNotWebp = !format.equalsIgnoreCase("webp");
+		String userRequestedFormat;
+
+		if (isWebpRequested && format.equalsIgnoreCase("webp")) {
+			userRequestedFormat = "webp";
+		} else if (isFormatNotWebp) {
+			userRequestedFormat = format;
+		} else {
+			userRequestedFormat = "jpg";
+		}
+
+		return service.getImage(request, rId, width, height, userRequestedFormat, fit, preserveFormat);
 	}
 
 }

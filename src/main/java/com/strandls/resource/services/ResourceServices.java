@@ -6,6 +6,7 @@ package com.strandls.resource.services;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 
 import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.MediaGallery;
@@ -85,5 +86,8 @@ public interface ResourceServices {
 	public String deleteResourceByID(HttpServletRequest request, Long rId);
 
 	public MediaGalleryResourceData getResourceDataByID(Long rID);
+
+	public Response getImage(HttpServletRequest request, Long resourceId, Integer width, Integer height,
+			String userRequestedFormat, String fit, boolean preserveFormat);
 
 }

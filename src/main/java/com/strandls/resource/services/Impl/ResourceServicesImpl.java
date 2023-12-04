@@ -3,6 +3,10 @@
  */
 package com.strandls.resource.services.Impl;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,12 +20,15 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.strandls.authentication_utility.util.AuthUtil;
+import com.strandls.authentication_utility.util.PropertyFileUtil;
 import com.strandls.resource.dao.LicenseDao;
 import com.strandls.resource.dao.MediaGalleryDao;
 import com.strandls.resource.dao.MediaGalleryResourceDao;
@@ -55,6 +62,8 @@ import com.strandls.resource.pojo.UFileCreateData;
 import com.strandls.resource.services.LicenseServices;
 import com.strandls.resource.services.ResourceServices;
 import com.strandls.resource.util.Constants;
+import com.strandls.resource.util.ResourceUtil;
+import com.strandls.resource.util.ResourceUtil.BASE_FOLDERS;
 import com.strandls.user.ApiException;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.UserIbp;
@@ -63,6 +72,8 @@ import com.strandls.utility.pojo.Tags;
 import com.strandls.utility.pojo.TagsMappingData;
 
 import net.minidev.json.JSONArray;
+
+import org.apache.tika.Tika;
 
 /**
  * @author Abhishek Rudra
@@ -121,6 +132,12 @@ public class ResourceServicesImpl implements ResourceServices {
 	private static final String ROLE_ADMIN = "ROLE_ADMIN";
 
 	private static final String RESOURCE = "resource";
+
+	private static final String CONFIG_PROPERTIES = "config.properties";
+
+	private String storageBasePath = PropertyFileUtil.fetchProperty(CONFIG_PROPERTIES, "storage_dir");
+	private String imageQuality = PropertyFileUtil.fetchProperty(CONFIG_PROPERTIES, "imageQuality");
+	private String waterMarked = PropertyFileUtil.fetchProperty(CONFIG_PROPERTIES, "waterMarked");
 
 	@Override
 	public List<ResourceData> getResouceURL(String objectType, Long objectId) {
@@ -878,13 +895,13 @@ public class ResourceServicesImpl implements ResourceServices {
 		return new MediaGalleryListPageData(mediaGalleryDao.getTotalMediaGalleryCount(), mediaGalleryListTitles);
 	}
 
-	public String getReprImage(List<Long> resourcesIds) {
+	public Long getReprImage(List<Long> resourcesIds) {
 
 		List<Resource> resources = resourceDao.findByIds(resourcesIds, -1, -1);
 
 		for (Resource resource : resources) {
 			if (resource.getType() != null && resource.getType().equals("IMAGE")) {
-				return resource.getFileName();
+				return resource.getId();
 			}
 		}
 
@@ -1003,6 +1020,87 @@ public class ResourceServicesImpl implements ResourceServices {
 		}
 
 		return null;
+	}
+
+	public static String generateFilePath(String directory, String fileName) {
+		int index = directory.indexOf("//");
+		if (index != -1) {
+			directory = "/" + directory.substring(index + 2);
+		}
+		String filepath = directory + '/' + fileName;
+		return filepath;
+	}
+
+	@Override
+	public Response getImage(HttpServletRequest request, Long resourceId, Integer width, Integer height, String format,
+			String fit, boolean preserve) {
+		try {
+
+			Resource resource = resourceDao.findById(resourceId);
+			if (resource == null) {
+				return Response.status(Status.NOT_FOUND).entity("Resource not found").build();
+			}
+			if (!"IMAGE".equals(resource.getType())) {
+				return Response.status(Status.NOT_FOUND).entity("Resource dont have an image").build();
+			}
+
+			String prefix = ResourceUtil.folderPrefix(resource.getContext());
+			Path path = Paths.get(prefix + resource.getFileName());
+			String directory = path.getParent().toString();
+			String fileName = path.getFileName().toString();
+			String dirPath = storageBasePath + File.separatorChar + directory + File.separatorChar;
+
+			String fileLocation = dirPath + fileName;
+			File file = ResourceUtil.findFile(fileLocation);
+
+			UserIbp userIbp = userService.getUserIbp(resource.getUploaderId().toString());
+			String watermark = "";
+			if (Boolean.TRUE.equals(Boolean.parseBoolean(waterMarked))) {
+				watermark = resource.getContributor() != null ? resource.getContributor() : userIbp.getName();
+			}
+
+			if (file == null) {
+				return Response.status(Status.NOT_FOUND).entity("File not found").build();
+			}
+
+			String name = file.getName();
+			String extension = name.substring(name.lastIndexOf(".") + 1);
+			String thumbnailFolder = storageBasePath + File.separatorChar + BASE_FOLDERS.THUMBNAILS.getFolder()
+					+ file.getParentFile().getAbsolutePath().substring(storageBasePath.length());
+
+			String command = null;
+			command = ResourceUtil.generateImageCommand(file.getAbsolutePath(), thumbnailFolder, width, height,
+					preserve ? extension : format, Integer.parseInt(imageQuality), fit, watermark);
+
+			File resizedFile = getResizedFile(command, thumbnailFolder, file, Integer.parseInt(imageQuality));
+			Tika tika = new Tika();
+			String detactedContentType = tika.detect(resizedFile.getName());
+			String contentType = ResourceUtil.determineContentType(preserve, format, detactedContentType);
+
+			return ResourceUtil.fromFileToStream(resizedFile, contentType);
+		} catch (FileNotFoundException fe) {
+			logger.error(fe.getMessage());
+			return Response.status(Status.NOT_FOUND).build();
+		} catch (Exception ex) {
+			logger.error(ex.getMessage());
+			return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	private File getResizedFile(String command, String thumbnailFolder, File file, int imageQuality) {
+		File thumbnailFile = ResourceUtil.getResizedImage(command, imageQuality);
+
+		File resizedFile;
+		if (!thumbnailFile.exists()) {
+			File folders = new File(thumbnailFolder);
+			folders.mkdirs();
+			boolean fileGenerated = ResourceUtil.generateFile(command);
+			resizedFile = fileGenerated ? ResourceUtil.getResizedImage(command, imageQuality) : new File(file.toURI());
+
+		} else {
+			resizedFile = thumbnailFile;
+		}
+		return resizedFile;
 	}
 
 }

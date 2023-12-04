@@ -13,7 +13,7 @@ public class MediaGalleryListTitles {
 	private Long id;
 	private String name;
 	private String description;
-	private String reprImage;
+	private Long reprImage;
 	private Date lastUpdated;
 	private Date createdOn;
 	private Long totalMedia;
@@ -35,7 +35,7 @@ public class MediaGalleryListTitles {
 	 * @param totalMedia
 	 */
 
-	public MediaGalleryListTitles(Long id, String name, String description, String reprImage, Date lastUpdated,
+	public MediaGalleryListTitles(Long id, String name, String description, Long reprImage, Date lastUpdated,
 			Date createdOn, Long totalMedia) {
 		super();
 		this.id = id;
@@ -71,11 +71,11 @@ public class MediaGalleryListTitles {
 		this.description = description;
 	}
 
-	public String getReprImage() {
+	public Long getReprImage() {
 		return reprImage;
 	}
 
-	public void setReprImage(String reprImage) {
+	public void setReprImage(Long reprImage) {
 		this.reprImage = reprImage;
 	}
 
