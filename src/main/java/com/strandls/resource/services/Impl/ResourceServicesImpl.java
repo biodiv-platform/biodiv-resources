@@ -1056,7 +1056,8 @@ public class ResourceServicesImpl implements ResourceServices {
 			UserIbp userIbp = userService.getUserIbp(resource.getUploaderId().toString());
 			String watermark = "";
 			if (Boolean.TRUE.equals(Boolean.parseBoolean(waterMarked))) {
-				watermark = resource.getContributor() != null ? resource.getContributor() : userIbp.getName();
+				String contributor = resource.getContributor();
+				watermark = (contributor != null && !contributor.isEmpty()) ? contributor : userIbp.getName();
 			}
 
 			if (file == null) {
