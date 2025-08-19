@@ -1,31 +1,25 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.pojo;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 /**
  * @author Abhishek Rudra
- *
  */
-
 @Entity
 @Table(name = "license")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class License implements Serializable {
 
-	/**
-	 * 
-	 */
+	/** */
 	private static final long serialVersionUID = 1382720822664840829L;
 
 	private Long id;
@@ -60,5 +54,4 @@ public class License implements Serializable {
 	public void setUrl(String url) {
 		this.url = url;
 	}
-
 }

@@ -3,9 +3,7 @@ package com.strandls.resource.pojo;
 import java.util.List;
 
 /**
- * 
  * @author Arun
- *
  */
 public class ResourceListData {
 
@@ -37,5 +35,4 @@ public class ResourceListData {
 	public void setTotalCount(long totalCount) {
 		this.totalCount = totalCount;
 	}
-
 }

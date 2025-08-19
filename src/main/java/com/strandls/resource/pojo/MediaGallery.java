@@ -3,23 +3,21 @@ package com.strandls.resource.pojo;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 /**
  * @author Arun
- *
  */
 @Entity
 @Table(name = "media_gallery", schema = "public")
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 public class MediaGallery implements Serializable {
 	private static final long serialVersionUID = 7283903139147778338L;
 
@@ -96,5 +94,4 @@ public class MediaGallery implements Serializable {
 	public void setIsDeleted(Boolean isDeleted) {
 		this.isDeleted = isDeleted;
 	}
-
 }

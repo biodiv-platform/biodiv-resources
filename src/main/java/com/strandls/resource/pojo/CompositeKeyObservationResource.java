@@ -1,20 +1,16 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.pojo;
 
 import java.io.Serializable;
 
 /**
  * @author Abhishek Rudra
- *
  */
 public class CompositeKeyObservationResource implements Serializable {
 
-	/**
-	 * 
-	 */
+	/** */
 	private static final long serialVersionUID = -7433935834067243630L;
+
 	private Long observationId;
 	private Long resourceId;
 
@@ -33,5 +29,4 @@ public class CompositeKeyObservationResource implements Serializable {
 	public void setResourceId(Long resourceId) {
 		this.resourceId = resourceId;
 	}
-
 }

@@ -1,6 +1,4 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.dao;
 
 import com.google.inject.AbstractModule;
@@ -8,7 +6,6 @@ import com.google.inject.Scopes;
 
 /**
  * @author Abhishek Rudra
- *
  */
 public class ResourceDaoModule extends AbstractModule {
 
@@ -23,6 +20,5 @@ public class ResourceDaoModule extends AbstractModule {
 		bind(UFileDao.class).in(Scopes.SINGLETON);
 		bind(ResourceCropDao.class).in(Scopes.SINGLETON);
 		bind(MediaGalleryDao.class).in(Scopes.SINGLETON);
-
 	}
 }

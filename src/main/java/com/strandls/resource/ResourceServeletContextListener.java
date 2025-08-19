@@ -1,6 +1,4 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource;
 
 import java.io.File;
@@ -22,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContextEvent;
-
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -42,9 +38,10 @@ import com.strandls.resource.services.Impl.ResourceServicesModule;
 import com.strandls.user.controller.UserServiceApi;
 import com.strandls.utility.controller.UtilityServiceApi;
 
+import jakarta.servlet.ServletContextEvent;
+
 /**
  * @author Abhishek Rudra
- *
  */
 public class ResourceServeletContextListener extends GuiceServletContextListener {
 
@@ -71,7 +68,7 @@ public class ResourceServeletContextListener extends GuiceServletContextListener
 				SessionFactory sessionFactory = configuration.buildSessionFactory();
 
 				Map<String, String> props = new HashMap<>();
-				props.put("javax.ws.rs.Application", ApplicationConfig.class.getName());
+				props.put("jakarta.ws.rs.Application", ApplicationConfig.class.getName());
 				props.put("jersey.config.server.provider.packages", "com");
 				props.put("jersey.config.server.wadl.disableWadl", "true");
 
@@ -83,10 +80,8 @@ public class ResourceServeletContextListener extends GuiceServletContextListener
 				bind(UploadApi.class).in(Scopes.SINGLETON);
 				bind(Headers.class).in(Scopes.SINGLETON);
 				serve("/api/*").with(ServletContainer.class, props);
-
 			}
 		}, new ResourceControllerModule(), new ResourceServicesModule(), new ResourceDaoModule());
-
 	}
 
 	protected List<Class<?>> getEntityClassesFromPackage(String packageName)
@@ -99,7 +94,7 @@ public class ResourceServeletContextListener extends GuiceServletContextListener
 			Annotation[] annotations = cls.getAnnotations();
 
 			for (Annotation annotation : annotations) {
-				if (annotation instanceof javax.persistence.Entity) {
+				if (annotation instanceof jakarta.persistence.Entity) {
 					classes.add(cls);
 				}
 			}
@@ -167,6 +162,5 @@ public class ResourceServeletContextListener extends GuiceServletContextListener
 						driver);
 			}
 		}
-
 	}
 }

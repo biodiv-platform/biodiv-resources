@@ -1,19 +1,12 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.util;
 
 /**
  * @author Abhishek Rudra
- *
- * 
  */
 public class Constants {
 
-	/**
-	 * since all the class members are static , private constructor is required
-	 * 
-	 */
+	/** since all the class members are static , private constructor is required */
 	private Constants() {
 		super();
 	}
@@ -23,5 +16,4 @@ public class Constants {
 	public static final String SPECIESFIELD = "SPECIES_FIELD";
 	public static final String MEDIAGALLERY = "mediaGallery";
 	public static final String RESOURCE = "resource";
-
 }

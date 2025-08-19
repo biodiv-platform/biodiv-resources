@@ -1,9 +1,5 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.dao;
-
-import javax.inject.Inject;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -13,9 +9,10 @@ import org.slf4j.LoggerFactory;
 import com.strandls.resource.pojo.License;
 import com.strandls.resource.util.AbstractDAO;
 
+import jakarta.inject.Inject;
+
 /**
  * @author Abhishek Rudra
- *
  */
 public class LicenseDao extends AbstractDAO<License, Long> {
 
@@ -42,7 +39,5 @@ public class LicenseDao extends AbstractDAO<License, Long> {
 			session.close();
 		}
 		return entity;
-
 	}
-
 }

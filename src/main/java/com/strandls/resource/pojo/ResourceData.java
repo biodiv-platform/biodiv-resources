@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.strandls.resource.pojo;
 
 import java.util.List;
@@ -8,34 +5,28 @@ import java.util.List;
 import com.strandls.user.pojo.UserIbp;
 import com.strandls.utility.pojo.Tags;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-/**
- * @author Abhishek Rudra
- *
- */
-
-@ApiModel
+@Schema(description = "Contains detailed info about a resource, its owner, license and tags")
 public class ResourceData {
 
+	@Schema(description = "The resource details")
 	private Resource resource;
+
+	@Schema(description = "The user who owns or uploaded the resource")
 	private UserIbp userIbp;
+
+	@Schema(description = "The license associated with this resource")
 	private License license;
+
+	@ArraySchema(schema = @Schema(implementation = Tags.class))
 	private List<Tags> tags;
 
-	/**
-	 * 
-	 */
 	public ResourceData() {
 		super();
 	}
 
-	/**
-	 * @param resource
-	 * @param userIbp
-	 * @param license
-	 * @param tags
-	 */
 	public ResourceData(Resource resource, UserIbp userIbp, License license, List<Tags> tags) {
 		super();
 		this.resource = resource;
@@ -75,5 +66,4 @@ public class ResourceData {
 	public void setTags(List<Tags> tags) {
 		this.tags = tags;
 	}
-
 }

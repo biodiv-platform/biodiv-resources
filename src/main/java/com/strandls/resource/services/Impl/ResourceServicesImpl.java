@@ -1,6 +1,4 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.services.Impl;
 
 import java.io.File;
@@ -18,11 +16,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
+import org.apache.tika.Tika;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,15 +65,15 @@ import com.strandls.utility.controller.UtilityServiceApi;
 import com.strandls.utility.pojo.Tags;
 import com.strandls.utility.pojo.TagsMappingData;
 
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import net.minidev.json.JSONArray;
-
-import org.apache.tika.Tika;
 
 /**
  * @author Abhishek Rudra
- *
  */
-
 enum SelectionStatus {
 	SELECTED, REJECTED, NOT_CURATED;
 }
@@ -171,7 +165,6 @@ public class ResourceServicesImpl implements ResourceServices {
 			} catch (ApiException e) {
 				logger.error(e.getMessage());
 			}
-
 		}
 		return observationResourceUsers;
 	}
@@ -210,9 +203,7 @@ public class ResourceServicesImpl implements ResourceServices {
 					logger.debug("Media Gallery Resource Mapping Created: " + mappingResult.getMediaGalleryId()
 							+ " and " + mappingResult.getResourceId());
 				}
-
 			}
-
 		}
 		List<Long> resourceIds = null;
 		if (objectType.equalsIgnoreCase(Constants.OBSERVATION))
@@ -225,7 +216,6 @@ public class ResourceServicesImpl implements ResourceServices {
 			resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
 		resources = resourceDao.findByObjectId(resourceIds);
 		return resources;
-
 	}
 
 	@Override
@@ -245,7 +235,7 @@ public class ResourceServicesImpl implements ResourceServices {
 				resourceIds = mediaGalleryResourceDao.findByMediaId(objectId);
 
 			if (resourceIds == null || resourceIds.isEmpty())
-//				resources are getting created for the first time
+				// resources are getting created for the first time
 				return createResource(objectType, objectId, newResources);
 
 			List<Resource> oldResourcesList = resourceDao.findByObjectId(resourceIds);
@@ -331,7 +321,6 @@ public class ResourceServicesImpl implements ResourceServices {
 			logger.error(e.getMessage());
 		}
 		return null;
-
 	}
 
 	@Override
@@ -376,7 +365,6 @@ public class ResourceServicesImpl implements ResourceServices {
 				if (uFile != null)
 					return true;
 				return false;
-
 			}
 			return true;
 		} catch (Exception e) {
@@ -436,7 +424,6 @@ public class ResourceServicesImpl implements ResourceServices {
 							licenseService.getLicenseById(resource.getLicenseId()), null));
 					speciesPullMap.put(observationId, resourcesDataList);
 				}
-
 			}
 
 			if (!speciesPullMap.isEmpty()) {
@@ -450,7 +437,6 @@ public class ResourceServicesImpl implements ResourceServices {
 			logger.error(e.getMessage());
 		}
 		return null;
-
 	}
 
 	@Override
@@ -490,7 +476,6 @@ public class ResourceServicesImpl implements ResourceServices {
 			logger.error(e.getMessage());
 		}
 		return false;
-
 	}
 
 	@Override
@@ -503,10 +488,8 @@ public class ResourceServicesImpl implements ResourceServices {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
-
 		}
 		return null;
-
 	}
 
 	private Boolean validCropStatus(String status) {
@@ -588,7 +571,6 @@ public class ResourceServicesImpl implements ResourceServices {
 			logger.error(e.getMessage());
 		}
 		return null;
-
 	}
 
 	@Override
@@ -640,7 +622,6 @@ public class ResourceServicesImpl implements ResourceServices {
 		if (Boolean.TRUE.equals(isBulkPosting)) {
 			createBulkResourceMapping(request, resourceIds, mediaGalleryIds, selectAll, unSelectedIds,
 					commonResourcesId);
-
 		}
 
 		List<ResourceData> resourceDataList = getResources(limit, offset, commonResourcesId);
@@ -669,7 +650,6 @@ public class ResourceServicesImpl implements ResourceServices {
 			resourceDataList.add(resourceData);
 		}
 		return (resourceDataList);
-
 	}
 
 	@Override
@@ -701,7 +681,6 @@ public class ResourceServicesImpl implements ResourceServices {
 		} else {
 			mediaGallery.setName("All media gallery");
 			mediaGallery.setDescription("This is all media Gallery");
-
 		}
 
 		List<Long> resourceIds = mediaGalleryResourceDao.findByMediaIds(mIdsLong);
@@ -795,7 +774,6 @@ public class ResourceServicesImpl implements ResourceServices {
 			TagsMappingData tagsMapping = mediaGalleryHelper.createTagsMappingData(resource.getId(),
 					resource.getTags());
 			mediaGalleryHelper.updateTagsMapping(request, tagsMapping);
-
 		}
 
 		// new resource
@@ -889,7 +867,6 @@ public class ResourceServicesImpl implements ResourceServices {
 			mediaGalleryListItem.setTotalMedia((long) resourcesIds.size());
 
 			mediaGalleryListTitles.add(mediaGalleryListItem);
-
 		}
 
 		return new MediaGalleryListPageData(mediaGalleryDao.getTotalMediaGalleryCount(), mediaGalleryListTitles);
@@ -906,7 +883,6 @@ public class ResourceServicesImpl implements ResourceServices {
 		}
 
 		return null;
-
 	}
 
 	@Override
@@ -980,13 +956,11 @@ public class ResourceServicesImpl implements ResourceServices {
 				resourceDao.delete(resource);
 
 				return "Resource Deleted Sucessfully";
-
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
 		return null;
-
 	}
 
 	@Override
@@ -1103,5 +1077,4 @@ public class ResourceServicesImpl implements ResourceServices {
 		}
 		return resizedFile;
 	}
-
 }

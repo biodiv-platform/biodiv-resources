@@ -2,35 +2,37 @@ package com.strandls.resource.pojo;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-@ApiModel
+@Schema(description = "Crop information for a resource image. Contains selection state and crop rectangle.")
 @Entity
 @Table(name = "resource_crop_info")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ResourceCropInfo implements Serializable {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -8928280656369809809L;
 
+	@Schema(description = "Unique identifier for the resource crop info (resource id)", example = "123")
 	private Long id;
 
+	@Schema(description = "Crop selection status (e.g. 'CROPPED', 'ORIGINAL')", example = "CROPPED")
 	private String selectionStatus;
 
+	@Schema(description = "X coordinate of the crop rectangle (top-left)", example = "15")
 	private Long x;
 
+	@Schema(description = "Y coordinate of the crop rectangle (top-left)", example = "25")
 	private Long y;
 
+	@Schema(description = "Width of the crop rectangle in pixels", example = "512")
 	private Long width;
 
+	@Schema(description = "Height of the crop rectangle in pixels", example = "256")
 	private Long height;
 
 	public ResourceCropInfo() {
@@ -105,5 +107,4 @@ public class ResourceCropInfo implements Serializable {
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
-
 }

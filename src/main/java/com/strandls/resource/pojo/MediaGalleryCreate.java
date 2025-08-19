@@ -7,10 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * @author Arun
- *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 public class MediaGalleryCreate {
 
 	private String name;
@@ -69,5 +67,4 @@ public class MediaGalleryCreate {
 	public void setResourcesList(List<ResourceWithTags> resourcesList) {
 		this.resourcesList = resourcesList;
 	}
-
 }

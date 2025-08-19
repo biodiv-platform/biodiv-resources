@@ -32,5 +32,4 @@ public class MediaGalleryResourceData {
 	public void setMediaGallery(List<MediaGallery> mediaGallery) {
 		this.mediaGallery = mediaGallery;
 	}
-
 }

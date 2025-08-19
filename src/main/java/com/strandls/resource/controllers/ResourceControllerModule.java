@@ -5,14 +5,13 @@ import com.google.inject.Scopes;
 
 /**
  * @author Abhishek Rudra
- *
  */
 public class ResourceControllerModule extends AbstractModule {
 
-    @Override
-    protected void configure() {
+	@Override
+	protected void configure() {
 
-        bind(ResourceController.class).in(Scopes.SINGLETON);
-        bind(LicenseController.class).in(Scopes.SINGLETON);
-    }
+		bind(ResourceController.class).in(Scopes.SINGLETON);
+		bind(LicenseController.class).in(Scopes.SINGLETON);
+	}
 }

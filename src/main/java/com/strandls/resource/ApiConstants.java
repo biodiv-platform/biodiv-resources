@@ -1,17 +1,12 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource;
 
 /**
  * @author Abhishek Rudra
- *
  */
 public class ApiConstants {
 
-	/**
-	 * since all class members are static , private constructor is required
-	 */
+	/** since all class members are static , private constructor is required */
 	private ApiConstants() {
 		super();
 	}
@@ -41,5 +36,4 @@ public class ApiConstants {
 	public static final String BULKRESOURCEMAPPING = "/bulkResourceMapping";
 	public static final String EDITPAGE = "/editPage";
 	public static final String IMAGE = "/image";
-
 }

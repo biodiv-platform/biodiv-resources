@@ -4,13 +4,9 @@ import java.io.Serializable;
 
 /**
  * @author Arun
- *
  */
-
 public class CompositeKeyMediaGalleryResource implements Serializable {
-	/**
-	 * 
-	 */
+	/** */
 	private static final long serialVersionUID = 2021737483395261002L;
 
 	private Long mediaGalleryId;
@@ -31,5 +27,4 @@ public class CompositeKeyMediaGalleryResource implements Serializable {
 	public void setResourceId(Long resourceId) {
 		this.resourceId = resourceId;
 	}
-
 }

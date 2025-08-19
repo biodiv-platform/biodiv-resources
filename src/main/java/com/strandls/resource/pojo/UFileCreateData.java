@@ -1,11 +1,8 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.pojo;
 
 /**
  * @author Abhishek Rudra
- *
  */
 public class UFileCreateData {
 
@@ -14,9 +11,7 @@ public class UFileCreateData {
 	private String size;
 	private Integer weight;
 
-	/**
-	 * 
-	 */
+	/** */
 	public UFileCreateData() {
 		super();
 	}
@@ -66,5 +61,4 @@ public class UFileCreateData {
 	public void setWeight(Integer weight) {
 		this.weight = weight;
 	}
-
 }

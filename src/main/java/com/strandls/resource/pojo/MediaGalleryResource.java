@@ -2,19 +2,17 @@ package com.strandls.resource.pojo;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.Table;
 
 /**
  * @author Arun
- *
  */
-
 @Entity
 @Table(name = "media_gallery_resource")
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -25,9 +23,7 @@ public class MediaGalleryResource implements Serializable {
 	private Long mediaGalleryId;
 	private Long resourceId;
 
-	/**
-	 * 
-	 */
+	/** */
 	public MediaGalleryResource() {
 		super();
 	}
@@ -60,5 +56,4 @@ public class MediaGalleryResource implements Serializable {
 	public void setResourceId(Long resourceId) {
 		this.resourceId = resourceId;
 	}
-
 }

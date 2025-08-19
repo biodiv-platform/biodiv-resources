@@ -1,8 +1,8 @@
 package com.strandls.resource.services;
 
-import com.strandls.resource.pojo.License;
-
 import java.util.List;
+
+import com.strandls.resource.pojo.License;
 
 public interface LicenseServices {
 

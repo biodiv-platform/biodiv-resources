@@ -1,12 +1,7 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.services;
 
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
 
 import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.MediaGallery;
@@ -25,9 +20,11 @@ import com.strandls.resource.pojo.SpeciesResourcePulling;
 import com.strandls.resource.pojo.UFile;
 import com.strandls.resource.pojo.UFileCreateData;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.Response;
+
 /**
  * @author Abhishek Rudra
- *
  */
 public interface ResourceServices {
 
@@ -89,5 +86,4 @@ public interface ResourceServices {
 
 	public Response getImage(HttpServletRequest request, Long resourceId, Integer width, Integer height,
 			String userRequestedFormat, String fit, boolean preserveFormat);
-
 }

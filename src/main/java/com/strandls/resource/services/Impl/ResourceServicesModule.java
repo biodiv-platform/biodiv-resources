@@ -1,6 +1,4 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.services.Impl;
 
 import com.google.inject.AbstractModule;
@@ -10,7 +8,6 @@ import com.strandls.resource.services.ResourceServices;
 
 /**
  * @author Abhishek Rudra
- *
  */
 public class ResourceServicesModule extends AbstractModule {
 

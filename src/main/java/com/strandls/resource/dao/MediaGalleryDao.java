@@ -3,8 +3,6 @@ package com.strandls.resource.dao;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -13,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.util.AbstractDAO;
+
+import jakarta.inject.Inject;
 
 public class MediaGalleryDao extends AbstractDAO<MediaGallery, Long> {
 
@@ -38,7 +38,6 @@ public class MediaGalleryDao extends AbstractDAO<MediaGallery, Long> {
 			session.close();
 		}
 		return entity;
-
 	}
 
 	public Long getTotalMediaGalleryCount() {
@@ -71,5 +70,4 @@ public class MediaGalleryDao extends AbstractDAO<MediaGallery, Long> {
 		}
 		return result;
 	}
-
 }

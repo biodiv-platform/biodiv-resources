@@ -1,31 +1,7 @@
-/**
- * 
- */
 package com.strandls.resource.controllers;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.StreamingOutput;
 
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.resource.ApiConstants;
@@ -47,29 +23,44 @@ import com.strandls.resource.pojo.UFile;
 import com.strandls.resource.pojo.UFileCreateData;
 import com.strandls.resource.services.ResourceServices;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
-/**
- * @author Abhishek Rudra
- *
- */
-
-@Api("Resource Services")
+@Tag(name = "Resource Services", description = "APIs for resource microservice")
 @Path(ApiConstants.V1 + ApiConstants.RESOURCE)
+@Produces(MediaType.APPLICATION_JSON)
 public class ResourceController {
 
 	@Inject
 	private ResourceServices service;
 
-	@ApiOperation(value = "Dummy API Ping", notes = "Checks validity of war file at deployment", response = String.class)
-
 	@GET
 	@Path(ApiConstants.PING)
 	@Produces(MediaType.TEXT_PLAIN)
+	@Operation(summary = "Dummy API Ping", description = "Checks validity of war file at deployment", responses = @ApiResponse(responseCode = "200", description = "Pong", content = @Content(schema = @Schema(implementation = String.class))))
 	public String getPong() {
 		return "PONG";
 	}
@@ -77,174 +68,158 @@ public class ResourceController {
 	@GET
 	@Path(ApiConstants.GETPATH + "/{objectType}/{objectId}")
 	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "Find Media Reource by Observation ID", notes = "Returns Path of the Resources", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
-
+	@Operation(summary = "Find Media Resource by Observation ID", responses = {
+			@ApiResponse(responseCode = "200", description = "List of resource data", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResourceData.class)))),
+			@ApiResponse(responseCode = "400", description = "Invalid ID", content = @Content(schema = @Schema(implementation = String.class))) })
 	public Response getImageResource(
-			@ApiParam(value = "ID Observation for Resource", required = true) @PathParam("objectType") String objectType,
-			@PathParam("objectId") String objectId) {
+			@Parameter(description = "Type of object", required = true) @PathParam("objectType") String objectType,
+			@Parameter(description = "Object ID", required = true) @PathParam("objectId") String objectId) {
 		try {
-
 			Long objId = Long.parseLong(objectId);
 			List<ResourceData> resource = service.getResouceURL(objectType, objId);
-			return Response.status(Status.OK).entity(resource).build();
+			return Response.status(Response.Status.OK).entity(resource).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).build();
+			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 	}
 
 	@POST
 	@Path(ApiConstants.CREATE + "/{objectType}/{objectId}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-	@ApiOperation(value = "Create Resources against a objectId", notes = "Returns list of uncreated resources", response = Resource.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
-
-	public Response createResource(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
-			@PathParam("objectId") String objectId, @ApiParam(name = "resources") List<Resource> resources) {
+	@Operation(summary = "Create Resources against a objectId", requestBody = @RequestBody(required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = Resource.class)))), responses = {
+			@ApiResponse(responseCode = "201", description = "All resources created", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Resource.class)))),
+			@ApiResponse(responseCode = "206", description = "Some resources could not be created", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Resource.class)))),
+			@ApiResponse(responseCode = "400", description = "Invalid ID", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response createResource(@Context HttpServletRequest request,
+			@Parameter(description = "Type of object", required = true) @PathParam("objectType") String objectType,
+			@Parameter(description = "Object ID", required = true) @PathParam("objectId") String objectId,
+			List<Resource> resources) {
 		try {
 			Long id = Long.parseLong(objectId);
 			List<Resource> result = service.createResource(objectType, id, resources);
 			if (result.isEmpty())
-				return Response.status(Status.CREATED).entity(null).build();
+				return Response.status(Response.Status.CREATED).entity(null).build();
 			return Response.status(206).entity(result).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
 	@PUT
 	@Path(ApiConstants.UPDATE + "/{objectType}/{objectId}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-	@ApiOperation(value = "Update Resources against a objectId", notes = "Returns list of uncreated resources", response = Resource.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
-
-	public Response updateResources(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
-			@PathParam("objectId") String objectId, @ApiParam(name = "resources") List<Resource> resources) {
+	@Operation(summary = "Update Resources against a objectId", requestBody = @RequestBody(required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = Resource.class)))), responses = {
+			@ApiResponse(responseCode = "200", description = "Resources updated", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Resource.class)))),
+			@ApiResponse(responseCode = "400", description = "Invalid ID", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response updateResources(@Context HttpServletRequest request,
+			@Parameter(description = "Type of object", required = true) @PathParam("objectType") String objectType,
+			@Parameter(description = "Object ID", required = true) @PathParam("objectId") String objectId,
+			List<Resource> resources) {
 		try {
 			Long objId = Long.parseLong(objectId);
 			List<Resource> result = service.updateResource(objectType, objId, resources);
-			return Response.status(Status.OK).entity(result).build();
+			return Response.status(Response.Status.OK).entity(result).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
 	@PUT
 	@Path(ApiConstants.UPDATE + ApiConstants.RATING + "/{objectType}/{objectId}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-
-	@ApiOperation(value = "update the rating of the resource", notes = "Returns all the resource", response = Resource.class, responseContainer = "List")
-	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "unable to update the rating", response = String.class) })
-
-	public Response updateRating(@Context HttpServletRequest request, @PathParam("objectType") String objectType,
-			@PathParam("objectId") String objectId, @ApiParam(name = "resourceRating") ResourceRating resourceRating) {
+	@Operation(summary = "Update the rating of the resource", requestBody = @RequestBody(required = true, content = @Content(schema = @Schema(implementation = ResourceRating.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Resources with updated rating", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Resource.class)))),
+			@ApiResponse(responseCode = "400", description = "Unable to update the rating", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response updateRating(@Context HttpServletRequest request,
+			@Parameter(description = "Type of object", required = true) @PathParam("objectType") String objectType,
+			@Parameter(description = "Object ID", required = true) @PathParam("objectId") String objectId,
+			ResourceRating resourceRating) {
 		try {
 			Long objId = Long.parseLong(objectId);
 			List<Resource> result = service.updateResourceRating(objectType, objId, resourceRating);
-			return Response.status(Status.OK).entity(result).build();
+			return Response.status(Response.Status.OK).entity(result).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
-
 	}
 
 	@GET
 	@Path(ApiConstants.LICENSE + "/{licenseId}")
 	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "Find Media Reource of License by ID", notes = "Returns Path of the license", response = License.class)
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "License not found", response = String.class),
-			@ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
-
+	@Operation(summary = "Find Media Resource of License by ID", responses = {
+			@ApiResponse(responseCode = "200", description = "License found", content = @Content(schema = @Schema(implementation = License.class))),
+			@ApiResponse(responseCode = "404", description = "License not found", content = @Content(schema = @Schema(implementation = String.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid ID", content = @Content(schema = @Schema(implementation = String.class))) })
 	public Response getLicenseResource(
-			@ApiParam(value = "ID for License Resource", required = true) @PathParam("licenseId") String licenseId) {
+			@Parameter(description = "ID for License Resource", required = true) @PathParam("licenseId") String licenseId) {
 		try {
 			Long id = Long.parseLong(licenseId);
 			License license = service.getLicenseResouce(id);
-
 			if (license != null)
-				return Response.status(Status.OK).entity(license).build();
+				return Response.status(Response.Status.OK).entity(license).build();
 			else
-				return Response.status(Status.NOT_FOUND).build();
-
+				return Response.status(Response.Status.NOT_FOUND).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).build();
+			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 	}
 
 	@GET
 	@Path(ApiConstants.UFILE + "/{id}")
 	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "finds ufile by id", notes = "Return the ufile data as per id", response = UFile.class)
-	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "unable to find the ufile data", response = String.class) })
-
-	public Response getUFilePath(@PathParam("id") String id) {
+	@Operation(summary = "Finds ufile by id", responses = {
+			@ApiResponse(responseCode = "200", description = "UFile found", content = @Content(schema = @Schema(implementation = UFile.class))),
+			@ApiResponse(responseCode = "400", description = "Unable to find the ufile data", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response getUFilePath(@Parameter(description = "UFile id", required = true) @PathParam("id") String id) {
 		try {
 			Long ufileId = Long.parseLong(id);
 			UFile result = service.uFileFindById(ufileId);
-			return Response.status(Status.OK).entity(result).build();
+			return Response.status(Response.Status.OK).entity(result).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
 	@POST
 	@Path(ApiConstants.UFILE)
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-
-	@ApiOperation(value = "create the Ufile object", notes = "return the ufile object on completion", response = UFile.class)
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to create the ufile", response = String.class) })
-
-	public Response createUFile(@Context HttpServletRequest request,
-			@ApiParam(name = "ufileCreateData") UFileCreateData ufileCreateData) {
+	@Operation(summary = "Create the Ufile object", requestBody = @RequestBody(required = true, content = @Content(schema = @Schema(implementation = UFileCreateData.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "UFile created", content = @Content(schema = @Schema(implementation = UFile.class))),
+			@ApiResponse(responseCode = "406", description = "Data missing", content = @Content(schema = @Schema(implementation = String.class))),
+			@ApiResponse(responseCode = "400", description = "Unable to create the ufile", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response createUFile(@Context HttpServletRequest request, UFileCreateData ufileCreateData) {
 		try {
 			UFile result = service.createUFile(ufileCreateData);
 			if (result != null)
-				return Response.status(Status.OK).entity(result).build();
+				return Response.status(Response.Status.OK).entity(result).build();
 			return Response.status(Status.NOT_ACCEPTABLE).entity("Data missing").build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
 	@DELETE
 	@Path(ApiConstants.REMOVE + ApiConstants.UFILE + "/{uFileId}")
 	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-
-	@ApiOperation(value = "Remove the ufile", notes = "returns the booelan for deletion", response = Boolean.class)
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to delete the ufile", response = String.class) })
-
-	public Response removeUFile(@Context HttpServletRequest request, @PathParam("uFileId") String uFileId) {
+	@Operation(summary = "Remove the ufile", responses = {
+			@ApiResponse(responseCode = "200", description = "Boolean deleted", content = @Content(schema = @Schema(implementation = Boolean.class))),
+			@ApiResponse(responseCode = "406", description = "Data missing", content = @Content(schema = @Schema(implementation = String.class))),
+			@ApiResponse(responseCode = "400", description = "Unable to delete the ufile", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response removeUFile(@Context HttpServletRequest request,
+			@Parameter(description = "UFile id", required = true) @PathParam("uFileId") String uFileId) {
 		try {
 			Long ufileId = Long.parseLong(uFileId);
 			Boolean result = service.removeUFile(ufileId);
 			if (result != null)
-				return Response.status(Status.OK).entity(result).build();
-			return Response.status(Status.NOT_ACCEPTABLE).build();
+				return Response.status(Response.Status.OK).entity(result).build();
+			return Response.status(Response.Status.NOT_ACCEPTABLE).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
@@ -252,21 +227,19 @@ public class ResourceController {
 	@Path(ApiConstants.BULK + ApiConstants.GETPATH + "/{objectType}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "get multiple resources", notes = "returns multiple resources", response = SpeciesPull.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
-
-	public Response getBulkResources(@PathParam("objectType") String objectType,
-			@DefaultValue("0") @QueryParam("offset") String offset,
-			@ApiParam(name = "objectIds") List<Long> objectIds) {
+	@Operation(summary = "Get multiple resources", requestBody = @RequestBody(required = true, description = "List of object IDs", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Long.class)))), responses = {
+			@ApiResponse(responseCode = "200", description = "Multiple resources", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SpeciesPull.class)))),
+			@ApiResponse(responseCode = "400", description = "unable to fetch resource", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response getBulkResources(
+			@Parameter(description = "Type of the observation", required = true) @PathParam("objectType") String objectType,
+			@Parameter(description = "Offset", example = "0") @DefaultValue("0") @QueryParam("offset") String offset,
+			List<Long> objectIds) {
 		try {
-
 			Long offSet = Long.parseLong(offset);
 			List<SpeciesPull> result = service.getresourceMultipleObserId(objectType, objectIds, offSet);
-			return Response.status(Status.OK).entity(result).build();
-
+			return Response.status(Response.Status.OK).entity(result).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
@@ -274,20 +247,16 @@ public class ResourceController {
 	@Path(ApiConstants.PULLRESOURCE)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-
-	@ApiOperation(value = "pull resources for speciess", notes = "returns multiple resources", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to pull resource", response = String.class) })
-
-	public Response pullResource(@Context HttpServletRequest request,
-			@ApiParam(name = "resourcePulling") SpeciesResourcePulling resourcePulling) {
+	@Operation(summary = "pull resources for species", requestBody = @RequestBody(required = true, description = "Species resource pulling criteria", content = @Content(schema = @Schema(implementation = SpeciesResourcePulling.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Multiple resources", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResourceData.class)))),
+			@ApiResponse(responseCode = "400", description = "unable to pull resource", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response pullResource(@Context HttpServletRequest request, SpeciesResourcePulling resourcePulling) {
 		try {
 			List<ResourceData> result = service.speciesResourcesPulling(resourcePulling);
-			return Response.status(Status.OK).entity(result).build();
-
+			return Response.status(Response.Status.OK).entity(result).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
@@ -295,17 +264,17 @@ public class ResourceController {
 	@Path(ApiConstants.GETPATH + "/{resourceId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "fetch resource by Id", notes = "returns  resources", response = Resource.class)
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
-
-	public Response getResourceDataById(@PathParam("resourceId") String resourceId) {
+	@Operation(summary = "fetch resource by Id", responses = {
+			@ApiResponse(responseCode = "200", description = "Resource found", content = @Content(schema = @Schema(implementation = Resource.class))),
+			@ApiResponse(responseCode = "400", description = "unable to fetch resource", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response getResourceDataById(
+			@Parameter(description = "Resource ID", required = true) @PathParam("resourceId") String resourceId) {
 		try {
 			Long rId = Long.parseLong(resourceId);
 			Resource result = service.getResourceById(rId);
-			return Response.status(Status.OK).entity(result).build();
+			return Response.status(Response.Status.OK).entity(result).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
@@ -313,20 +282,18 @@ public class ResourceController {
 	@Path(ApiConstants.REMOVE + ApiConstants.SPECIESFIELD + "/{sfId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-
-	@ApiOperation(value = "remove speciesField mapping", notes = "returns boolean", response = Boolean.class)
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
-
-	public Response removeSFMapping(@Context HttpServletRequest request, @PathParam("sfId") String sfId) {
+	@Operation(summary = "remove speciesField mapping", responses = {
+			@ApiResponse(responseCode = "200", description = "Mapping deleted", content = @Content(schema = @Schema(implementation = Boolean.class))),
+			@ApiResponse(responseCode = "400", description = "unable to fetch resource", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response removeSFMapping(@Context HttpServletRequest request,
+			@Parameter(description = "Species Field Mapping ID", required = true) @PathParam("sfId") String sfId) {
 		try {
 			Long speciesFieldId = Long.parseLong(sfId);
 			Boolean result = service.removeSpeciesFieldMapping(speciesFieldId);
-			return Response.status(Status.OK).entity(result).build();
-
+			return Response.status(Response.Status.OK).entity(result).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
@@ -334,16 +301,17 @@ public class ResourceController {
 	@Path("/cropInfo/{resourceId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "get crop details of resources", notes = "returns something", response = ResourceCropInfo.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
-	public Response getResourcesCropInfo(@PathParam("resourceId") String resourceIds) {
+	@Operation(summary = "Get crop details of resources", responses = {
+			@ApiResponse(responseCode = "200", description = "Crop info details", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResourceCropInfo.class)))),
+			@ApiResponse(responseCode = "400", description = "unable to fetch resource", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response getResourcesCropInfo(
+			@Parameter(description = "Comma-separated resource IDs", required = true) @PathParam("resourceId") String resourceIds) {
 		try {
 			List<ResourceCropInfo> result = service.fetchResourceCropInfo(resourceIds);
-			return Response.status(Status.OK).entity(result).build();
+			return Response.status(Response.Status.OK).entity(result).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
-
 	}
 
 	@PUT
@@ -351,16 +319,15 @@ public class ResourceController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ValidateUser
-	@ApiOperation(value = "update crop details of resources", notes = "returns updated crop information", response = ResourceCropInfo.class)
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch resource", response = String.class) })
-
-	public Response updateResourcesCropInfo(@Context HttpServletRequest request,
-			@ApiParam(name = "resourcesCropInfo") ResourceCropInfo resourceCropInfo) {
+	@Operation(summary = "update crop details of resources", requestBody = @RequestBody(required = true, description = "Crop Info details update", content = @Content(schema = @Schema(implementation = ResourceCropInfo.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Crop info updated", content = @Content(schema = @Schema(implementation = ResourceCropInfo.class))),
+			@ApiResponse(responseCode = "400", description = "unable to fetch resource", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response updateResourcesCropInfo(@Context HttpServletRequest request, ResourceCropInfo resourceCropInfo) {
 		try {
 			ResourceCropInfo result = service.updateResourceCropInfo(resourceCropInfo);
-			return Response.status(Status.OK).entity(result).build();
+			return Response.status(Response.Status.OK).entity(result).build();
 		} catch (Exception e) {
-			return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
 		}
 	}
 
@@ -368,13 +335,12 @@ public class ResourceController {
 	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.EDITPAGE + "/{mId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "Find Media Resource by  ID", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
-
-	public Response getMedia(@ApiParam(value = "ID  for Resource", required = true) @PathParam("mId") String mId) {
+	@Operation(summary = "Find Media Resource by ID", responses = {
+			@ApiResponse(responseCode = "200", description = "Media Gallery", content = @Content(schema = @Schema(implementation = MediaGalleryShow.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid ID", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response getMedia(
+			@Parameter(description = "ID for Resource", required = true) @PathParam("mId") String mId) {
 		try {
-
 			Long objId = Long.parseLong(mId);
 			MediaGalleryShow mediaGallery = service.getMediaByID(objId);
 			return Response.status(Status.OK).entity(mediaGallery).build();
@@ -387,14 +353,12 @@ public class ResourceController {
 	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.CREATE)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-
-	@ApiOperation(value = "create the Ufile object", notes = "return the ufile object on completion", response = UFile.class)
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to create the ufile", response = String.class) })
-
-	public Response createMedia(@Context HttpServletRequest request,
-			@ApiParam(name = "ufileCreateData") MediaGalleryCreate mediaGalleryCreate) {
+	@Operation(summary = "Create a Media Gallery", requestBody = @RequestBody(required = true, description = "Media Gallery Create object", content = @Content(schema = @Schema(implementation = MediaGalleryCreate.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Created/show media gallery", content = @Content(schema = @Schema(implementation = MediaGalleryShow.class))),
+			@ApiResponse(responseCode = "406", description = "Data missing", content = @Content(schema = @Schema(implementation = String.class))),
+			@ApiResponse(responseCode = "400", description = "unable to create the media gallery", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response createMedia(@Context HttpServletRequest request, MediaGalleryCreate mediaGalleryCreate) {
 		try {
 			MediaGalleryShow result = service.createMedia(request, mediaGalleryCreate);
 			if (result != null)
@@ -409,14 +373,13 @@ public class ResourceController {
 	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.UPLOAD)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-
-	@ApiOperation(value = "create the Ufile object", notes = "return the ufile object on completion", response = UFile.class)
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to create the ufile", response = String.class) })
-
+	@Operation(summary = "Upload resource list to media gallery", requestBody = @RequestBody(required = true, description = "List of resources to upload", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResourceWithTags.class)))), responses = {
+			@ApiResponse(responseCode = "200", description = "Upload result", content = @Content(schema = @Schema(implementation = String.class))),
+			@ApiResponse(responseCode = "406", description = "Error Uploading", content = @Content(schema = @Schema(implementation = String.class))),
+			@ApiResponse(responseCode = "400", description = "unable to create the ufile", content = @Content(schema = @Schema(implementation = String.class))) })
 	public Response uploadResourceMediaGallery(@Context HttpServletRequest request,
-			@ApiParam(name = "ufileCreateData") List<ResourceWithTags> resourceUpload) {
+			List<ResourceWithTags> resourceUpload) {
 		try {
 			String result = service.uploadMedia(request, resourceUpload);
 			if (result != null)
@@ -430,22 +393,20 @@ public class ResourceController {
 	@GET
 	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.SHOW)
 	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "Find Media Resource by  ID", notes = "Returns Media Gallery", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
-
-	public Response getMediaGallery(@DefaultValue("0") @QueryParam("offset") String offset,
-			@DefaultValue("12") @QueryParam("limit") String limit, @DefaultValue("all") @QueryParam("type") String type,
-			@DefaultValue("all") @QueryParam("tags") String tags, @DefaultValue("all") @QueryParam("user") String users,
-			@DefaultValue("all") @QueryParam("mId") String mIds) {
+	@Operation(summary = "Find Media Resource by ID", description = "Returns Media Gallery page with filtering and pagination", responses = {
+			@ApiResponse(responseCode = "200", description = "Media Gallery result", content = @Content(schema = @Schema(implementation = MediaGalleryShow.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response getMediaGallery(
+			@Parameter(description = "Offset", example = "0") @DefaultValue("0") @QueryParam("offset") String offset,
+			@Parameter(description = "Limit", example = "12") @DefaultValue("12") @QueryParam("limit") String limit,
+			@Parameter(description = "Resource type", example = "all") @DefaultValue("all") @QueryParam("type") String type,
+			@Parameter(description = "Tags filter", example = "all") @DefaultValue("all") @QueryParam("tags") String tags,
+			@Parameter(description = "User(s) filter", example = "all") @DefaultValue("all") @QueryParam("user") String users,
+			@Parameter(description = "Media Gallery IDs filter", example = "all") @DefaultValue("all") @QueryParam("mId") String mIds) {
 		try {
-
 			Integer max = Integer.parseInt(limit);
 			Integer offSet = Integer.parseInt(offset);
-
 			MediaGalleryShow mediaGallery = service.getMediaByID(mIds, max, offSet, type, tags, users);
-
 			return Response.status(Status.OK).entity(mediaGallery).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
@@ -455,20 +416,16 @@ public class ResourceController {
 	@GET
 	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.LIST)
 	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "Find Media Resource by  ID", notes = "Returns Media Gallery", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
-
-	public Response getMediaGalleryList(@DefaultValue("0") @QueryParam("offset") String offset,
-			@DefaultValue("12") @QueryParam("limit") String limit) {
+	@Operation(summary = "Find Media Gallery (paginated list)", description = "Returns paginated list of media gallery items", responses = {
+			@ApiResponse(responseCode = "200", description = "Media Gallery List page", content = @Content(schema = @Schema(implementation = MediaGalleryListPageData.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response getMediaGalleryList(
+			@Parameter(description = "Offset", example = "0") @DefaultValue("0") @QueryParam("offset") String offset,
+			@Parameter(description = "Limit", example = "12") @DefaultValue("12") @QueryParam("limit") String limit) {
 		try {
-
 			Integer max = Integer.parseInt(limit);
 			Integer offSet = Integer.parseInt(offset);
-
 			MediaGalleryListPageData mediaGalleryListPageData = service.getMediaGalleryListPageData(max, offSet);
-
 			return Response.status(Status.OK).entity(mediaGalleryListPageData).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
@@ -478,14 +435,11 @@ public class ResourceController {
 	@GET
 	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.ALL)
 	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "Find All Media Resource", notes = "Returns Media Gallery", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
-
+	@Operation(summary = "Find All Media Resource", description = "Returns Media Gallery list", responses = {
+			@ApiResponse(responseCode = "200", description = "List of all MediaGallery", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MediaGallery.class)))),
+			@ApiResponse(responseCode = "400", description = "Unable to fetch the data", content = @Content(schema = @Schema(implementation = String.class))) })
 	public Response getAllMediaGallery() {
 		try {
-
 			List<MediaGallery> mediaGallery = service.getAllMediaGallery();
 			return Response.status(Status.OK).entity(mediaGallery).build();
 		} catch (Exception e) {
@@ -497,25 +451,24 @@ public class ResourceController {
 	@Path(ApiConstants.ALL)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "Find All Media Resource ", notes = "Returns List of Media", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "unable to fetch the data", response = String.class) })
-
+	@Operation(summary = "Find All Media Resource", description = "Returns List of Media using advanced/paginated search", responses = {
+			@ApiResponse(responseCode = "200", description = "Results list", content = @Content(schema = @Schema(implementation = ResourceListData.class))),
+			@ApiResponse(responseCode = "400", description = "Unable to fetch the data", content = @Content(schema = @Schema(implementation = String.class))) })
 	public Response getAllResources(@Context HttpServletRequest request,
-			@DefaultValue("0") @QueryParam("offset") String offset,
-			@DefaultValue("12") @QueryParam("limit") String limit,
-			@DefaultValue("all") @QueryParam("context") String context,
-			@DefaultValue("all") @QueryParam("type") String type, @DefaultValue("all") @QueryParam("tags") String tags,
-			@DefaultValue("all") @QueryParam("user") String users,
-			@DefaultValue("false") @QueryParam("isBulkPosting") Boolean isBulkPosting,
-			@DefaultValue("false") @QueryParam("selectAll") Boolean selectAll,
-			@QueryParam("unSelected") String unSelectedIds, @QueryParam("resourceIds") String resourceIds,
-			@QueryParam("mediaGalleryIds") String mediaGalleryIds) {
+			@Parameter(description = "Offset", example = "0") @DefaultValue("0") @QueryParam("offset") String offset,
+			@Parameter(description = "Limit", example = "12") @DefaultValue("12") @QueryParam("limit") String limit,
+			@Parameter(description = "Context", example = "all") @DefaultValue("all") @QueryParam("context") String context,
+			@Parameter(description = "Resource type", example = "all") @DefaultValue("all") @QueryParam("type") String type,
+			@Parameter(description = "Tags", example = "all") @DefaultValue("all") @QueryParam("tags") String tags,
+			@Parameter(description = "User", example = "all") @DefaultValue("all") @QueryParam("user") String users,
+			@Parameter(description = "Bulk posting?", example = "false") @DefaultValue("false") @QueryParam("isBulkPosting") Boolean isBulkPosting,
+			@Parameter(description = "Select all?", example = "false") @DefaultValue("false") @QueryParam("selectAll") Boolean selectAll,
+			@Parameter(description = "Unselected IDs") @QueryParam("unSelected") String unSelectedIds,
+			@Parameter(description = "Resource IDs") @QueryParam("resourceIds") String resourceIds,
+			@Parameter(description = "Media gallery IDs") @QueryParam("mediaGalleryIds") String mediaGalleryIds) {
 		try {
-
 			Integer max = Integer.parseInt(limit);
 			Integer offSet = Integer.parseInt(offset);
-
 			ResourceListData resultList = service.getAllResources(max, offSet, context, type, tags, users, request,
 					isBulkPosting, selectAll, unSelectedIds, resourceIds, mediaGalleryIds);
 			return Response.status(Status.OK).entity(resultList).build();
@@ -528,16 +481,13 @@ public class ResourceController {
 	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.DELETE + "/{mId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-
-	@ApiOperation(value = "Delete MediaGallery by  ID", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
-
+	@Operation(summary = "Delete MediaGallery by ID", description = "Deletes a media gallery by its ID", responses = {
+			@ApiResponse(responseCode = "200", description = "Deleted. Returns status message.", content = @Content(schema = @Schema(implementation = String.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid ID", content = @Content(schema = @Schema(implementation = String.class))) })
 	public Response deleteMedia(@Context HttpServletRequest request,
-			@ApiParam(value = "ID  for Resource", required = true) @PathParam("mId") String mediaGalleryId) {
+			@Parameter(description = "ID for Resource", required = true) @PathParam("mId") String mediaGalleryId) {
 		try {
-
 			Long mId = Long.parseLong(mediaGalleryId);
 			String result = service.deleteMediaByID(request, mId);
 			return Response.status(Status.OK).entity(result).build();
@@ -550,19 +500,15 @@ public class ResourceController {
 	@Path(ApiConstants.MEDIAGALLERY + ApiConstants.UPDATE + "/{mId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-
-	@ApiOperation(value = "Update Media Gallery", notes = "Returns Media", response = ResourceData.class, responseContainer = "List")
-	@ApiResponses(value = {
-			@ApiResponse(code = 400, message = "Unable TO update Media Gallery", response = String.class) })
-
+	@Operation(summary = "Update Media Gallery", description = "Updates a media gallery and returns the updated object", requestBody = @RequestBody(required = true, content = @Content(schema = @Schema(implementation = MediaGalleryCreate.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Returns updated Media Gallery", content = @Content(schema = @Schema(implementation = MediaGalleryShow.class))),
+			@ApiResponse(responseCode = "400", description = "Unable to update Media Gallery", content = @Content(schema = @Schema(implementation = String.class))) })
 	public Response updateMediaGallery(@Context HttpServletRequest request,
-			@ApiParam(value = "ID  for Resource", required = true) @PathParam("mId") String mediaGalleryId,
-			@ApiParam(name = "mediaGallery") MediaGalleryCreate mediaGallery) {
+			@Parameter(description = "ID for Resource", required = true) @PathParam("mId") String mediaGalleryId,
+			MediaGalleryCreate mediaGallery) {
 		try {
 			Long mId = Long.parseLong(mediaGalleryId);
-
 			MediaGalleryShow updatedMediaGallery = service.updateMediaGalleryByID(request, mId, mediaGallery);
 			return Response.status(Status.OK).entity(updatedMediaGallery).build();
 		} catch (Exception e) {
@@ -574,14 +520,12 @@ public class ResourceController {
 	@Path("/{rId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
-
-	@ApiOperation(value = "Find Resource by  ID", notes = "Returns Resource", response = MediaGalleryResourceData.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
-
+	@Operation(summary = "Find Resource by ID", description = "Returns a MediaGalleryResourceData object for a given resource ID", responses = {
+			@ApiResponse(responseCode = "200", description = "Media Gallery Resource Data", content = @Content(schema = @Schema(implementation = MediaGalleryResourceData.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid ID", content = @Content(schema = @Schema(implementation = String.class))) })
 	public Response getResource(
-			@ApiParam(value = "ID  for Resource", required = true) @PathParam("rId") String resourceId) {
+			@Parameter(description = "ID for Resource", required = true) @PathParam("rId") String resourceId) {
 		try {
-
 			Long rID = Long.parseLong(resourceId);
 			MediaGalleryResourceData mediaGallery = service.getResourceDataByID(rID);
 			return Response.status(Status.OK).entity(mediaGallery).build();
@@ -594,18 +538,13 @@ public class ResourceController {
 	@Path(ApiConstants.UPDATE)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-
-	@ApiOperation(value = "Update Resource", notes = "Returns Resource", response = ResourceWithTags.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "Unable To update Resource", response = String.class) })
-
-	public Response updateResource(@Context HttpServletRequest request,
-			@ApiParam(name = "resourceWithTags") ResourceWithTags resourceWithTags) {
+	@Operation(summary = "Update Resource", description = "Updates a resource and returns updated resource", requestBody = @RequestBody(required = true, content = @Content(schema = @Schema(implementation = ResourceWithTags.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Resource updated", content = @Content(schema = @Schema(implementation = Resource.class))),
+			@ApiResponse(responseCode = "400", description = "Unable to update Resource", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response updateResource(@Context HttpServletRequest request, ResourceWithTags resourceWithTags) {
 		try {
-
 			Resource updatedMediaGallery = service.updateResourceByID(request, resourceWithTags);
-
 			return Response.status(Status.OK).entity(updatedMediaGallery).build();
 		} catch (Exception e) {
 			return Response.status(Status.BAD_REQUEST).build();
@@ -616,16 +555,13 @@ public class ResourceController {
 	@Path(ApiConstants.DELETE + "/{rId}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	@Produces(MediaType.APPLICATION_JSON)
-
 	@ValidateUser
-
-	@ApiOperation(value = "Delete resource by  ID", notes = "Returns Media", response = Resource.class, responseContainer = "List")
-	@ApiResponses(value = { @ApiResponse(code = 400, message = "Invalid ID", response = String.class) })
-
+	@Operation(summary = "Delete resource by ID", description = "Deletes a resource by its ID", responses = {
+			@ApiResponse(responseCode = "200", description = "Resource deleted. Returns status message.", content = @Content(schema = @Schema(implementation = String.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid ID", content = @Content(schema = @Schema(implementation = String.class))) })
 	public Response deleteResource(@Context HttpServletRequest request,
-			@ApiParam(value = "ID  for Resource", required = true) @PathParam("rId") String resourceId) {
+			@Parameter(description = "ID for Resource", required = true) @PathParam("rId") String resourceId) {
 		try {
-
 			Long rId = Long.parseLong(resourceId);
 			String result = service.deleteResourceByID(request, rId);
 			return Response.status(Status.OK).entity(result).build();
@@ -637,19 +573,19 @@ public class ResourceController {
 	@GET
 	@Path(ApiConstants.IMAGE + "/{rId}")
 	@Consumes(MediaType.TEXT_PLAIN)
-	@ApiOperation(value = "Get the image resource with custom height & width by url", response = StreamingOutput.class)
+	@Operation(summary = "Get the image resource with custom height & width by url", description = "Returns the image stream for the resource, can resize/convert based on query", responses = {
+			@ApiResponse(responseCode = "200", description = "Image stream (binary)"),
+			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(schema = @Schema(implementation = String.class))) })
 	public Response getImage(@Context HttpServletRequest request, @PathParam("rId") String resourceId,
 			@QueryParam("w") Integer width, @QueryParam("h") Integer height,
 			@DefaultValue("webp") @QueryParam("fm") String format, @DefaultValue("") @QueryParam("fit") String fit,
-			@DefaultValue("false") @QueryParam("preserve") String presereve) throws UnsupportedEncodingException {
-
+			@DefaultValue("false") @QueryParam("preserve") String preserve) throws UnsupportedEncodingException {
 		Long rId = Long.parseLong(resourceId);
 		String hAccept = request.getHeader(HttpHeaders.ACCEPT);
-		boolean preserveFormat = Boolean.parseBoolean(presereve);
+		boolean preserveFormat = Boolean.parseBoolean(preserve);
 		boolean isWebpRequested = hAccept.contains("webp") && format.equalsIgnoreCase("webp");
 		boolean isFormatNotWebp = !format.equalsIgnoreCase("webp");
 		String userRequestedFormat;
-
 		if (isWebpRequested && format.equalsIgnoreCase("webp")) {
 			userRequestedFormat = "webp";
 		} else if (isFormatNotWebp) {
@@ -657,8 +593,6 @@ public class ResourceController {
 		} else {
 			userRequestedFormat = "jpg";
 		}
-
 		return service.getImage(request, rId, width, height, userRequestedFormat, fit, preserveFormat);
 	}
-
 }

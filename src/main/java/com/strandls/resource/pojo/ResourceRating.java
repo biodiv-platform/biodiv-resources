@@ -5,9 +5,7 @@ public class ResourceRating {
 	private Long resourceId;
 	private Integer rating;
 
-	/**
-	 * 
-	 */
+	/** */
 	public ResourceRating() {
 		super();
 	}
@@ -37,5 +35,4 @@ public class ResourceRating {
 	public void setRating(Integer rating) {
 		this.rating = rating;
 	}
-
 }

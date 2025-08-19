@@ -1,37 +1,29 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.pojo;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.Table;
 
 /**
  * @author Abhishek Rudra
- *
- * 
  */
-
 @Entity
 @Table(name = "species_field_resources")
 @IdClass(SpeciesFieldResourcesCompositeKey.class)
 public class SpeciesFieldResources implements Serializable {
 
-	/**
-	 * 
-	 */
+	/** */
 	private static final long serialVersionUID = 8470152061019023476L;
+
 	private Long speciesFieldId;
 	private Long resourceId;
 
-	/**
-	 * 
-	 */
+	/** */
 	public SpeciesFieldResources() {
 		super();
 	}
@@ -65,5 +57,4 @@ public class SpeciesFieldResources implements Serializable {
 	public void setResourceId(Long resourceId) {
 		this.resourceId = resourceId;
 	}
-
 }

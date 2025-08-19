@@ -1,12 +1,12 @@
 package com.strandls.resource;
 
-import javax.ws.rs.core.HttpHeaders;
-
 import com.strandls.file.api.UploadApi;
 import com.strandls.utility.controller.UtilityServiceApi;
 
+import jakarta.ws.rs.core.HttpHeaders;
+
 /**
- * @author Arun	
+ * @author Arun
  */
 public class Headers {
 
@@ -19,5 +19,4 @@ public class Headers {
 		utilityServices.getApiClient().addDefaultHeader(HttpHeaders.AUTHORIZATION, authHeader);
 		return utilityServices;
 	}
-
 }

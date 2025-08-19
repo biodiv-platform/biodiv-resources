@@ -2,8 +2,6 @@ package com.strandls.resource.dao;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -12,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import com.strandls.resource.pojo.ResourceCropInfo;
 import com.strandls.resource.util.AbstractDAO;
+
+import jakarta.inject.Inject;
 
 public class ResourceCropDao extends AbstractDAO<ResourceCropInfo, Long> {
 	private static final Logger logger = LoggerFactory.getLogger(ResourceCropDao.class);
@@ -33,7 +33,6 @@ public class ResourceCropDao extends AbstractDAO<ResourceCropInfo, Long> {
 			session.close();
 		}
 		return entity;
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -56,5 +55,4 @@ public class ResourceCropDao extends AbstractDAO<ResourceCropInfo, Long> {
 
 		return result;
 	}
-
 }

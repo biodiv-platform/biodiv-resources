@@ -4,9 +4,7 @@ import java.util.List;
 
 /**
  * @author Arun
- *
  */
-
 public class MediaGalleryShow {
 
 	private MediaGallery mediaGallery;
@@ -36,5 +34,4 @@ public class MediaGalleryShow {
 	public void setTotalCount(long totalCount) {
 		this.totalCount = totalCount;
 	}
-
 }

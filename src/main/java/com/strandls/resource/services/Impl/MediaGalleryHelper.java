@@ -8,10 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.HttpHeaders;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +26,10 @@ import com.strandls.utility.controller.UtilityServiceApi;
 import com.strandls.utility.pojo.Tags;
 import com.strandls.utility.pojo.TagsMapping;
 import com.strandls.utility.pojo.TagsMappingData;
+
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.HttpHeaders;
 
 public class MediaGalleryHelper {
 	private final Logger logger = LoggerFactory.getLogger(MediaGalleryHelper.class);
@@ -72,7 +72,6 @@ public class MediaGalleryHelper {
 			logger.error(e.getMessage());
 		}
 		return null;
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -100,7 +99,7 @@ public class MediaGalleryHelper {
 				filesDTO.setFiles(fileList);
 				filesDTO.setFolder("resources");
 				filesDTO.setModule(RESOURCE);
-				fileMap = fileUploadService.moveFiles(filesDTO);
+				fileMap = fileUploadService.moveFiles(filesDTO).getData();
 			}
 
 			for (ResourceWithTags resourceData : resourceDataList) {
@@ -168,7 +167,6 @@ public class MediaGalleryHelper {
 					if (objectId != null) {
 						MediaGalleryResource entity = new MediaGalleryResource(objectId, resource.getId());
 						mediaGalleryResourceDao.save(entity);
-
 					}
 
 					// To upload images in a media Gallery
@@ -187,7 +185,6 @@ public class MediaGalleryHelper {
 						createTagsMapping(request, tagMappingData);
 					}
 				}
-
 			}
 
 			return resources;
@@ -235,7 +232,6 @@ public class MediaGalleryHelper {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
-
 	}
 
 	public void updateTagsMapping(HttpServletRequest request, TagsMappingData tagsMappingData) {
@@ -246,7 +242,5 @@ public class MediaGalleryHelper {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
-
 	}
-
 }

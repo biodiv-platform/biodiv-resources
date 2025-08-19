@@ -1,6 +1,4 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.dao;
 
 import java.util.List;
@@ -11,14 +9,13 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-
 import com.strandls.resource.pojo.Resource;
 import com.strandls.resource.util.AbstractDAO;
 
+import jakarta.inject.Inject;
+
 /**
  * @author Abhishek Rudra
- *
  */
 public class ResourceDao extends AbstractDAO<Resource, Long> {
 
@@ -136,5 +133,4 @@ public class ResourceDao extends AbstractDAO<Resource, Long> {
 		}
 		return entities;
 	}
-
 }

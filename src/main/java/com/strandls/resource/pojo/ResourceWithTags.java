@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.strandls.utility.pojo.Tags;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 public class ResourceWithTags {
 
 	private Long id;
@@ -23,9 +22,7 @@ public class ResourceWithTags {
 	private List<Tags> tags;
 	private List<Long> mId;
 
-	/**
-	 * 
-	 */
+	/** */
 	public ResourceWithTags() {
 		super();
 	}
@@ -162,5 +159,4 @@ public class ResourceWithTags {
 				+ ", licenseId=" + licenseId + ", context=" + context + ", languageId=" + languageId + ", contributor="
 				+ contributor + "]" + ", tags=" + tags;
 	}
-
 }

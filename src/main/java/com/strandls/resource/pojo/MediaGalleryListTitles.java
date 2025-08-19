@@ -4,10 +4,7 @@ import java.util.Date;
 
 /**
  * @author Arun
- *
- * 
  */
-
 public class MediaGalleryListTitles {
 
 	private Long id;
@@ -18,9 +15,7 @@ public class MediaGalleryListTitles {
 	private Date createdOn;
 	private Long totalMedia;
 
-	/**
-	 * 
-	 */
+	/** */
 	public MediaGalleryListTitles() {
 		super();
 	}
@@ -34,7 +29,6 @@ public class MediaGalleryListTitles {
 	 * @param createdOn
 	 * @param totalMedia
 	 */
-
 	public MediaGalleryListTitles(Long id, String name, String description, Long reprImage, Date lastUpdated,
 			Date createdOn, Long totalMedia) {
 		super();
@@ -102,5 +96,4 @@ public class MediaGalleryListTitles {
 	public void setTotalMedia(Long totalMedia) {
 		this.totalMedia = totalMedia;
 	}
-
 }

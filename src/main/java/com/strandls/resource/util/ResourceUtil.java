@@ -8,18 +8,18 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.CacheControl;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 public class ResourceUtil {
 
@@ -251,7 +251,6 @@ public class ResourceUtil {
 		} catch (Exception e) {
 			in.close();
 			return Response.serverError().entity(e.getMessage()).build();
-
 		}
 	}
 
@@ -287,5 +286,4 @@ public class ResourceUtil {
 		}
 		return context;
 	}
-
 }

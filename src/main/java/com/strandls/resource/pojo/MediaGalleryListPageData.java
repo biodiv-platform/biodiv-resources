@@ -4,10 +4,7 @@ import java.util.List;
 
 /**
  * @author Arun
- *
- * 
  */
-
 public class MediaGalleryListPageData {
 
 	private Long totalCount;
@@ -34,5 +31,4 @@ public class MediaGalleryListPageData {
 	public void setMediaListTitles(List<MediaGalleryListTitles> mediaListTitles) {
 		this.mediaListTitles = mediaListTitles;
 	}
-
 }

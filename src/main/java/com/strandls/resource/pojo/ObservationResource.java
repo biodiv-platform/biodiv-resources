@@ -1,40 +1,32 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.pojo;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.Table;
 
 /**
  * @author Abhishek Rudra
- *
  */
-
 @Entity
 @Table(name = "observation_resource")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @IdClass(CompositeKeyObservationResource.class)
 public class ObservationResource implements Serializable {
 
-	/**
-	 * 
-	 */
+	/** */
 	private static final long serialVersionUID = -7970642734279869311L;
 
 	private Long observationId;
 	private Long resourceId;
 
-	/**
-	 * 
-	 */
+	/** */
 	public ObservationResource() {
 		super();
 	}
@@ -67,5 +59,4 @@ public class ObservationResource implements Serializable {
 	public void setResourceId(Long resourceId) {
 		this.resourceId = resourceId;
 	}
-
 }

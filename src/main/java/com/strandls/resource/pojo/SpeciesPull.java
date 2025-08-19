@@ -1,22 +1,16 @@
-/**
- * 
- */
+/** */
 package com.strandls.resource.pojo;
 
 import java.util.List;
 
 /**
  * @author Abhishek Rudra
- *
- * 
  */
 public class SpeciesPull {
 	private Long observationId;
 	private List<ResourceData> resourceData;
 
-	/**
-	 * 
-	 */
+	/** */
 	public SpeciesPull() {
 		super();
 	}
@@ -46,5 +40,4 @@ public class SpeciesPull {
 	public void setResourceData(List<ResourceData> resourceData) {
 		this.resourceData = resourceData;
 	}
-
 }
