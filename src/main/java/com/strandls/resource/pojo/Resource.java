@@ -11,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Schema(description = "Resource entity representing a file/image/video or other media asset")
@@ -82,7 +83,8 @@ public class Resource implements Serializable {
 	}
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resource_id_generator")
+	@SequenceGenerator(name = "resource_id_generator", sequenceName = "resource_id_seq", allocationSize = 1)
 	@Column(name = "id")
 	public Long getId() {
 		return id;
