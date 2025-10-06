@@ -83,9 +83,8 @@ public class Resource implements Serializable {
 	}
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resource_id_generator")
-	@SequenceGenerator(name = "resource_id_generator", sequenceName = "resource_id_seq", allocationSize = 1)
 	@Column(name = "id")
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	public Long getId() {
 		return id;
 	}
