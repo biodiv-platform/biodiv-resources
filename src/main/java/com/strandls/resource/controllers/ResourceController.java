@@ -280,7 +280,7 @@ public class ResourceController {
 
 	@DELETE
 	@Path(ApiConstants.REMOVE + ApiConstants.SPECIESFIELD + "/{sfId}")
-	@Consumes(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ValidateUser
 	@Operation(summary = "remove speciesField mapping", responses = {
