@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,47 @@ public class SpeciesResourceDao extends AbstractDAO<SpeciesResource, Long> {
 			session.close();
 		}
 		return result;
+	}
+
+	public int mergeResourcesToTarget(List<Long> sourceSpeciesIds, Long targetSpeciesId) {
+		if (sourceSpeciesIds == null || sourceSpeciesIds.isEmpty()) {
+			logger.warn("No source species IDs provided for merge");
+			return 0;
+		}
+
+		Session session = sessionFactory.openSession();
+		Transaction tx = null;
+		int updatedCount = 0;
+
+		try {
+			tx = session.beginTransaction();
+			logger.info("Merging resources from {} source IDs to target {}", sourceSpeciesIds.size(), targetSpeciesId);
+
+			// Use HQL - this works with your entity mapping
+			String hql = "UPDATE SpeciesResource SET speciesId = :targetSpeciesId WHERE speciesId IN (:sourceSpeciesIds)";
+			updatedCount = session.createQuery(hql).setParameter("targetSpeciesId", targetSpeciesId)
+					.setParameter("sourceSpeciesIds", sourceSpeciesIds).executeUpdate();
+
+			tx.commit();
+			logger.info("Successfully merged {} resources to target {}", updatedCount, targetSpeciesId);
+
+		} catch (Exception e) {
+			if (tx != null) {
+				try {
+					tx.rollback();
+				} catch (Exception rollbackEx) {
+					logger.error("Error during rollback", rollbackEx);
+				}
+			}
+			logger.error("Failed to merge resources to target {}: {}", targetSpeciesId, e.getMessage(), e);
+			throw new RuntimeException("mergeResourcesToTarget failed for target " + targetSpeciesId, e);
+		} finally {
+			if (session != null && session.isOpen()) {
+				session.close();
+			}
+		}
+
+		return updatedCount;
 	}
 
 	@SuppressWarnings("unchecked")
