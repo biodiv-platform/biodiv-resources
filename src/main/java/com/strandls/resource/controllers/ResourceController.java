@@ -224,7 +224,7 @@ public class ResourceController {
 
 	@DELETE
 	@Path(ApiConstants.REMOVE + ApiConstants.UFILE + "/{uFileId}")
-	@Consumes(MediaType.TEXT_PLAIN)
+	//@Consumes(MediaType.TEXT_PLAIN)
 	@ValidateUser
 	@Operation(summary = "Remove the ufile", responses = {
 			@ApiResponse(responseCode = "200", description = "Boolean deleted", content = @Content(schema = @Schema(implementation = Boolean.class))),
