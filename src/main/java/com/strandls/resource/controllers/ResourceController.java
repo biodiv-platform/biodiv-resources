@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.strandls.authentication_utility.filter.ValidateUser;
 import com.strandls.resource.ApiConstants;
+import com.strandls.resource.dao.SpeciesResourceDao;
 import com.strandls.resource.pojo.License;
 import com.strandls.resource.pojo.MediaGallery;
 import com.strandls.resource.pojo.MediaGalleryCreate;
@@ -57,12 +58,31 @@ public class ResourceController {
 	@Inject
 	private ResourceServices service;
 
+	@Inject
+	private SpeciesResourceDao speciesResourceDao;
+
 	@GET
 	@Path(ApiConstants.PING)
 	@Produces(MediaType.TEXT_PLAIN)
 	@Operation(summary = "Dummy API Ping", description = "Checks validity of war file at deployment", responses = @ApiResponse(responseCode = "200", description = "Pong", content = @Content(schema = @Schema(implementation = String.class))))
 	public String getPong() {
 		return "PONG";
+	}
+
+	@POST
+	@Path("/merge" + "/{objectId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.TEXT_PLAIN)
+	@Operation(summary = "Merge resources to target", requestBody = @RequestBody(required = true, description = "List of object IDs", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Long.class)))), responses = {
+			@ApiResponse(responseCode = "200", description = "Resources merged"),
+			@ApiResponse(responseCode = "400", description = "unable to merge resource", content = @Content(schema = @Schema(implementation = String.class))) })
+	public Response mergeResources(@PathParam("objectId") String objectId, List<Long> objectIds) {
+		try {
+			speciesResourceDao.mergeResourcesToTarget(objectIds, Long.parseLong(objectId));
+			return Response.status(Response.Status.OK).entity("MERGED").build();
+		} catch (Exception e) {
+			return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+		}
 	}
 
 	@GET
@@ -204,7 +224,6 @@ public class ResourceController {
 
 	@DELETE
 	@Path(ApiConstants.REMOVE + ApiConstants.UFILE + "/{uFileId}")
-	@Consumes(MediaType.TEXT_PLAIN)
 	@ValidateUser
 	@Operation(summary = "Remove the ufile", responses = {
 			@ApiResponse(responseCode = "200", description = "Boolean deleted", content = @Content(schema = @Schema(implementation = Boolean.class))),
