@@ -81,9 +81,8 @@ public class SpeciesResourceDao extends AbstractDAO<SpeciesResource, Long> {
 			tx = session.beginTransaction();
 			logger.info("Merging resources from {} source IDs to target {}", sourceSpeciesIds.size(), targetSpeciesId);
 
-			// Use HQL - this works with your entity mapping
-			String hql = "UPDATE SpeciesResource SET speciesId = :targetSpeciesId WHERE speciesId IN (:sourceSpeciesIds)";
-			updatedCount = session.createQuery(hql).setParameter("targetSpeciesId", targetSpeciesId)
+			String qry = "UPDATE SpeciesResource SET speciesId = :targetSpeciesId WHERE speciesId IN (:sourceSpeciesIds)";
+			updatedCount = session.createQuery(qry).setParameter("targetSpeciesId", targetSpeciesId)
 					.setParameter("sourceSpeciesIds", sourceSpeciesIds).executeUpdate();
 
 			tx.commit();
