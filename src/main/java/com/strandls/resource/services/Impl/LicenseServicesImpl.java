@@ -22,4 +22,9 @@ public class LicenseServicesImpl implements LicenseServices {
 	public License getLicenseById(Long licenseId) {
 		return licenseDao.findById(licenseId);
 	}
+
+	@Override
+	public List<License> getLicensesByIds(List<Long> licenseIds) {
+		return licenseDao.findByIds(licenseIds);
+	}
 }
