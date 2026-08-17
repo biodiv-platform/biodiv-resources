@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,6 +64,7 @@ import com.strandls.user.controller.UserServiceApi;
 import com.strandls.user.pojo.UserIbp;
 import com.strandls.utility.controller.UtilityServiceApi;
 import com.strandls.utility.pojo.Tags;
+import com.strandls.utility.pojo.TagsBulkData;
 import com.strandls.utility.pojo.TagsMappingData;
 
 import jakarta.inject.Inject;
@@ -149,22 +151,38 @@ public class ResourceServicesImpl implements ResourceServices {
 		if (resourceIds == null || resourceIds.isEmpty())
 			return null;
 		List<Resource> resourceList = resourceDao.findByObjectId(resourceIds);
+
+		List<Integer> uploaderIds = resourceList.stream().map(resource -> resource.getUploaderId().intValue())
+				.distinct().collect(Collectors.toList());
+		Map<Long, UserIbp> userById = new HashMap<Long, UserIbp>();
+		try {
+			List<UserIbp> users = userService.getUserIbpInBulk(uploaderIds);
+			userById = users.stream().collect(Collectors.toMap(UserIbp::getId, user -> user));
+		} catch (ApiException e) {
+			logger.error(e.getMessage());
+		}
+
+		List<Long> resourceObjectIds = resourceList.stream().map(Resource::getId).collect(Collectors.toList());
+		Map<Long, List<Tags>> tagsByResourceId = new HashMap<Long, List<Tags>>();
+		try {
+			List<TagsBulkData> tagsBulk = utilityServiceApi.getTagsBulk(Constants.RESOURCE, resourceObjectIds);
+			tagsByResourceId = tagsBulk.stream()
+					.collect(Collectors.toMap(TagsBulkData::getObjectId, TagsBulkData::getTags));
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		List<Long> licenseIds = resourceList.stream().map(Resource::getLicenseId).filter(Objects::nonNull)
+				.distinct().collect(Collectors.toList());
+		Map<Long, License> licenseById = licenseService.getLicensesByIds(licenseIds).stream()
+				.collect(Collectors.toMap(License::getId, license -> license));
+
 		for (Resource resource : resourceList) {
-			try {
-				UserIbp userIbp = userService.getUserIbp(resource.getUploaderId().toString());
+			UserIbp userIbp = userById.get(resource.getUploaderId());
+			List<Tags> tags = tagsByResourceId.get(resource.getId());
 
-				List<Tags> tags = null;
-				try {
-					tags = utilityServiceApi.getTags(Constants.RESOURCE, resource.getId().toString());
-				} catch (Exception e) {
-					logger.error(e.getMessage());
-				}
-
-				observationResourceUsers.add(new ResourceData(resource, userIbp,
-						licenseService.getLicenseById(resource.getLicenseId()), tags));
-			} catch (ApiException e) {
-				logger.error(e.getMessage());
-			}
+			observationResourceUsers
+					.add(new ResourceData(resource, userIbp, licenseById.get(resource.getLicenseId()), tags));
 		}
 		return observationResourceUsers;
 	}

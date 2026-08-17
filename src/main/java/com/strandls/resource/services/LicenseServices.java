@@ -9,4 +9,6 @@ public interface LicenseServices {
 	public List<License> getAllLicenses();
 
 	public License getLicenseById(Long licenseId);
+
+	public List<License> getLicensesByIds(List<Long> licenseIds);
 }
